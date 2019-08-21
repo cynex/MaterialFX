@@ -28,7 +28,9 @@ How to use:
 - Enjoy !
 
 Workflow:
-MaterialFX has a notable difference from the standard shader, and the first thing you'll notice is that the metallic map is called advanced PBR map. This is because we've taken the Metallic map (Smoothness on alpha) and also made use of the green and blue channels for curvature / thickness. You can repack these textures using the Repack functions built into the editor. You can get these Curvature / Thickness maps by baking your models from Substance Designer / Painter, or xNormal (free)
+-MaterialFX has a notable difference from the standard shader, and the first thing you'll notice is that the metallic map is called advanced PBR map. This is because we've taken the Metallic map (Smoothness on alpha) and also made use of the green and blue channels for curvature / thickness. You can repack these textures using the Repack functions built into the editor. You can get these Curvature / Thickness maps by baking your models from Substance Designer / Painter, or xNormal (free)
+-MaterialFX also uses another new texture called the Environment FXMap. This is a custom texture which is a mask layer for snow / growth / wetness areas. You can repack these textures from other maps to get a nice result using the repack functions included in the editor.
+
 
 Planned revisions: (prior to Unity Asset store launch)
 - Glass Shader
