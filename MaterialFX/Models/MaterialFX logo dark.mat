@@ -1,0 +1,202 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MaterialFX logo dark
+  m_Shader: {fileID: 4800000, guid: a087d32a0192f5f40a31332ea3c7d265, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AdvancedPBRMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: af86b4554c025bb488764108283bd37a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DispTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FXMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FXTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GrowthBump:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GrowthTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflectionCube:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WetNormalTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _AOAmount: 0
+    - _AllEffects: 1
+    - _BothNormals: 1
+    - _BumpScale: 1
+    - _CheckerDensity: 20
+    - _Colored: 0.159
+    - _Curvature: 1
+    - _Cutoff: 0.5
+    - _DetailAlbedoMultiplier: 0.2
+    - _DetailAlbedoScale: 4
+    - _DetailNormalMapScale: 1
+    - _DetailNormalMultiplier: 0.2
+    - _DetailNormalScale: 4
+    - _DispPower: 1
+    - _DispScale: 4
+    - _Displacement: 0
+    - _DisplacementLimiter: 64
+    - _DisplayMode: 0
+    - _DstBlend: 0
+    - _EditorTab: 4
+    - _EmissionAmount: 0
+    - _EmissionBoostRimPower: 1
+    - _EmissionBoostRimType: 0.001
+    - _EmissionDampenRimAmount: 0
+    - _EmissionDampenRimPower: 1
+    - _EmissionDampenRimType: 0.001
+    - _ForceMetallic: 0
+    - _ForceSmoothness: 0
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Growth: 0
+    - _GrowthDisplacement: 0.3
+    - _GrowthNoise: 0.3
+    - _GrowthNoiseSpeed: 0.3
+    - _IridescenceCurvature: 1
+    - _IridescenceRimAmount: 0
+    - _IridescenceRimPower: 1
+    - _IridescenceRimType: 0.001
+    - _IridescenceScale: 1
+    - _IridescenceSpeed: 1
+    - _MainTexTriplanarBlend: 1
+    - _MainTexTriplanarScale: 1
+    - _MainTexUVMode: 0
+    - _Metallic: 1
+    - _Mode: 0
+    - _NormalAmount: 1
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _Phong: 0
+    - _ReflectionAmount: 0
+    - _ReflectionCubeAmount: 0
+    - _ReflectionCubeNormalAmount: 0.5
+    - _ReflectionCubePower: 0
+    - _ReflectionDampenRimAmount: 0
+    - _ReflectionDampenRimPower: 1
+    - _ReflectionDampenRimType: 0.001
+    - _ReflectionPower: 1
+    - _ReflectionRimType: 1
+    - _ReflectionRotationAmount: 0
+    - _Smoothness: 0.93
+    - _SmoothnessTextureChannel: 0
+    - _Snow: 0
+    - _SnowAddParalax: 0.3
+    - _SnowDisplacement: 0.3
+    - _SnowNoiseAmount: 1
+    - _SnowNoiseScale: 4
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _SubSurfaceAmount: 0
+    - _SubSurfaceCurvatureAmount: 0.3
+    - _SubSurfaceNoiseAmount: 0.5
+    - _SubSurfaceNoiseScale: 3
+    - _SubSurfacePower: 1
+    - _SubSurfaceRange: 0.5
+    - _SubsurfaceRimType: 0.001
+    - _Tess: 1
+    - _TessDistMax: 25
+    - _TessDistMin: 10
+    - _TessellationUniform: 1
+    - _TextureWorkflow: 0
+    - _Thickness: 1
+    - _UVSec: 0
+    - _WetSpeedX: 0
+    - _WetSpeedY: 0
+    - _WetTextureScale: 1
+    - _Wetness: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionBoostColor: {r: 0, g: 0, b: 0, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GrowthTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _GrowthTint2: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _IridescenceTint: {r: 1, g: 1, b: 1, a: 1}
+    - _ReflectionCubeTint: {r: 1, g: 1, b: 1, a: 1}
+    - _ReflectionTint: {r: 1, g: 1, b: 1, a: 1}
+    - _SnowTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _SubSurfaceColor: {r: 1, g: 1, b: 1, a: 0}
+    - _WetTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
