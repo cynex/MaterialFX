@@ -14,3 +14,8 @@ Features
 - Additional Cubemap Reflections
 - FX Map(Growth, Snow, Wetness)
 - Easy to use UI with included tools to repackage textures
+
+How to use
+
+- Download repo for latest updates (beta)
+- Download the unity package (https://github.com/cynex/MaterialFX/blob/master/MaterialFX/UnityPackage_MaterialFX.unitypackage)
