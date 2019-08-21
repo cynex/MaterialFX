@@ -18,7 +18,7 @@ Features:
 
 Requirements:
 
-- Unity, and a GPU with DX shader support (4.6 for Tessellation)
+- Unity, and a GPU with DX11 shader support (4.6 for Tessellation)
 
 Download:
 
