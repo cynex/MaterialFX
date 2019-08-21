@@ -1,7 +1,7 @@
 # MaterialFX
 ![splash image](https://github.com/cynex/MaterialFX/blob/master/MaterialFX/Resources/MaterialFX_Splash.jpg?raw=true)
 
-Material FX : A powerful free shadertoy for unity.
+Material FX : A powerful free shader for unity.
 
 Features:
 
