@@ -18,4 +18,4 @@ Features
 How to use
 
 - Download repo for latest updates (beta)
-- Download the unity package (https://github.com/cynex/MaterialFX/blob/master/MaterialFX/UnityPackage_MaterialFX.unitypackage)
+- Download the unity package (https://github.com/cynex/MaterialFX/blob/master/MaterialFX/UnityPackage_MaterialFX.unitypackage?raw=true)
