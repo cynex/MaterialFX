@@ -101,8 +101,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _AOAmount: 0
+    - _AOCurvature: 0
+    - _AOMutliply: 0
+    - _AdvancedPBRMapTriplanarBlend: 1
+    - _AdvancedPBRMapTriplanarScale: 1
+    - _AdvancedPBRMapUVMode: 0
     - _AllEffects: 1
     - _BothNormals: 1
+    - _BumpMapTriplanarBlend: 1
+    - _BumpMapTriplanarScale: 1
+    - _BumpMapUVMode: 0
     - _BumpScale: 1
     - _CheckerDensity: 20
     - _Colored: 0.159
@@ -119,13 +127,16 @@ Material:
     - _DisplacementLimiter: 64
     - _DisplayMode: 0
     - _DstBlend: 0
-    - _EditorTab: 4
+    - _EditorTab: 2
     - _EmissionAmount: 0
+    - _EmissionBlendAmount: 1
+    - _EmissionBlendMode: 0
     - _EmissionBoostRimPower: 1
     - _EmissionBoostRimType: 0.001
     - _EmissionDampenRimAmount: 0
     - _EmissionDampenRimPower: 1
     - _EmissionDampenRimType: 0.001
+    - _EmissionRimMode: 0
     - _ForceMetallic: 0
     - _ForceSmoothness: 0
     - _GlossMapScale: 1
@@ -135,6 +146,9 @@ Material:
     - _GrowthDisplacement: 0.3
     - _GrowthNoise: 0.3
     - _GrowthNoiseSpeed: 0.3
+    - _IridescenceAmount: 0
+    - _IridescenceBlendAmount: 0
+    - _IridescenceBlendMode: 1
     - _IridescenceCurvature: 1
     - _IridescenceRimAmount: 0
     - _IridescenceRimPower: 1

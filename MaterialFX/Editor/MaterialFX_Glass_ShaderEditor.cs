@@ -22,27 +22,26 @@ namespace MaterialFX
             if (EditorHelper.isInitialized == false) EditorHelper.Init();
 
             targetMat = editor.target as Material;
-            //editorTab = targetMat.GetInt("_EditorTab");
+            editorTab = targetMat.GetInt("_EditorTab");
             displayMode = EditorHelper.GetRenderDisplayMode(targetMat, displayMode);
 
-            //editorTab = GUILayout.Toolbar(editorTab, new string[] { "Surface", "Detail", "Lighting", "Environment", "About" }, GUILayout.Width(EditorGUIUtility.currentViewWidth - 45));
+            editorTab = GUILayout.Toolbar(editorTab, new string[] { "Surface", "Detail", "Lighting", "Environment", "About" }, GUILayout.Width(EditorGUIUtility.currentViewWidth - 45));
             GUILayout.Space(10);
-            GUILayout.Label("Not yet completed. showing std unity inpector");
-            base.OnGUI(editor, properties);
-            /*if (editorTab == 0) ShowTextureArea();
+      
+            if (editorTab == 0) ShowTextureArea();
             if (editorTab == 1) ShowDetailArea();
             if (editorTab == 2) ShowLightingArea();
             if (editorTab == 3) ShowEnvironmentalArea();
             if (editorTab == 4)
             {
                 EditorHelper.About();
-            }*/
+            }
             targetMat.SetInt("_EditorTab", editorTab);            
         }
 
         void ShowLightingArea()
         {
-/*
+
             tempProp = new TextureProperties();
             tempProp.unifromName = "";
             tempProp.hasTexture = false;
@@ -73,7 +72,7 @@ namespace MaterialFX
             tempProp.unifromName = "";
             tempProp.displayName = "Iridescence";
             tempProp.hasTexture = false;
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimAmount", "Iridescence Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceAmount", "Iridescence Amount", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_IridescenceScale", "Iridescence Scale", UniformType.RANGE4));
             tempProp.uniformProperties.Add(new UniformProperty("_IridescenceSpeed", "Iridescence Speed", UniformType.RANGE4));
             tempProp.uniformProperties.Add(new UniformProperty("_IridescenceCurvature", "Curvature Amount", UniformType.RANGE1));
@@ -81,6 +80,39 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimType", "Rim Type", UniformType.RIMSETTING));
             tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimPower", "Rim Power", UniformType.RANGE32));
             EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
+            /*
+            _ThicknessAmount("_ThicknessAmount", Range(0, 4)) = 1
+            _AdditiveMainTex("_AdditiveMainTex", FLOAT) = .25
+            _AdditiveGrabTex("_AdditiveGrabTex", FLOAT) = 1
+            _ColorTintThin("_ColorTintThin", COLOR) = (1, 1, 1, 1)
+            _ColorTintThick("_ColorTintThick", COLOR) = (1, 1, 1, 1)            
+            _ColorTintThicknessAmount("_ColorTintThicknessAmount", FLOAT) = 1
+            _CurvatureAmount("_CurvatureAmount", float) = 1
+            _RefractionAmount("_RefractionAmount", FLOAT) = 1
+            _RefractionRGBSplit("_RefractionRGBSplit", FLOAT) = 0.01
+            _NormalRGBSplit("_NormalRGBSplit", FLOAT) = 1
+            */
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "";
+            tempProp.displayName = "Reflection Properties";
+            tempProp.hasTexture = false;
+            tempProp.uniformProperties.Add(new UniformProperty("_ThicknessAmount", "Thickness Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_CurvatureAmount", "Curvature Amount", UniformType.RANGE1));
+
+            tempProp.uniformProperties.Add(new UniformProperty("_RefractionAmount", "Refraction Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_RefractionRGBSplit", "Refraction RGB Split", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_NormalRGBSplit", "Normal RGB Amount", UniformType.RANGE1));
+
+            tempProp.uniformProperties.Add(new UniformProperty("_AdditiveMainTex", "MainTex Add Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_AdditiveGrabTex", "GrabTex Add Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_ColorTintThin", "Reflection Tint Thin", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_ColorTintThick", "Reflection Tint Thick", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_ColorTintThicknessAmount", "Color Tint Amount", UniformType.RANGE1));
+
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
 
             tempProp = new TextureProperties();
             tempProp.unifromName = "";
@@ -103,12 +135,12 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeTint", "Reflection Tint", UniformType.HDRCOLOR));
             tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubePower", "Reflection Power", UniformType.RANGE32));
             tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeNormalAmount", "Normal Amount", UniformType.RANGE1));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);*/
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
         }
 
         void ShowDetailArea()
         {
-            /*
+           
             tempProp = new TextureProperties();
             tempProp.unifromName = "";
             tempProp.displayName = "Tessellation";
@@ -149,12 +181,12 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_BothNormals", "Normal Blend", UniformType.RANGE1));
             EditorHelper.ShowTextureUniforms(targetMat, tempProp);
 
-    */
+
         }
 
         void ShowEnvironmentalArea()
         {
-          /*  tempProp = new TextureProperties();
+            tempProp = new TextureProperties();
             tempProp.unifromName = "_FXTex";
             tempProp.displayName = "Environemnt FX Map";
             tempProp.uniformProperties.Add(new UniformProperty("_AllEffects", "All Effect Blend", UniformType.RANGE1));
@@ -183,13 +215,13 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_WetSpeedY", "Wetness Gravity", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_FXMap", "Generate FX Map", UniformType.FXMAP));
             EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-            */
+          
 
         }
 
         void ShowTextureArea()
         {
-            /*GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal();
             int workflow = EditorHelper.GUIDropDown((int)textureWorkflow, "Texture Workflow", 120, EditorHelper.textureModeStrings, true);
             if (workflow >= 0)
             {
@@ -208,6 +240,7 @@ namespace MaterialFX
             tempProp.unifromName = "_MainTex";
             tempProp.displayName = albedoTitle;
             tempProp.uniformProperties.Add(new UniformProperty("_Color", "Color (Tint)", UniformType.COLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_Opacity", "Opacity", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_Colored", albedoTitle + " Amount", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_MainTex", "Texturing Mode", UniformType.UVMODE));
             EditorHelper.ShowTextureUniforms(targetMat, tempProp);
@@ -261,7 +294,7 @@ namespace MaterialFX
             tempProp.hasTexture = false;
             tempProp.uniformProperties.Add(new UniformProperty("_ForceMetallic", "Force Metallic", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_ForceSmoothness", "Force Smoothness", UniformType.RANGE1));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);*/
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
         }
 
     }

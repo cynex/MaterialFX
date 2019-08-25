@@ -9,8 +9,7 @@
 
 			_Opacity("_Opacity",Range(0,1))=1
             _MainTex ("Base (RGB)", 2D) = "white" {}
-			_AdditiveMainTex("_AdditiveMainTex",FLOAT)=.25
-			_AdditiveGrabTex("_AdditiveGrabTex",FLOAT)=1
+
 			_ShadowAmount("_ShadowAmount",Range(0,1))=1
 			[HDR]
 			_SpecularColor("_SpecularColor",COLOR)=(1,1,1,1)		
@@ -24,11 +23,18 @@
 			[HDR]
 			_EmissionColor("_EmissionColor",COLOR)=(1,1,1,1)
 			_AdvancedPBRMap ("_AdvancedPBRMap", 2D) = "black" {}
+
 			_ThicknessAmount("_ThicknessAmount",Range(0,4))=1
-			_ColorTint("_ColorTint",COLOR)=(1,1,1,1)
+			_AdditiveMainTex("_AdditiveMainTex",FLOAT)=.25
+			_AdditiveGrabTex("_AdditiveGrabTex",FLOAT)=1
+			_ColorTintThin("_ColorTintThin",COLOR)=(1,1,1,1)
+			_ColorTintThick("_ColorTintThick",COLOR)=(1,1,1,1)
+			_ColorTintThicknessAmount("_ColorTintThicknessAmount",FLOAT)=1
+			_CurvatureAmount("_CurvatureAmount",float)=1			
 			_RefractionAmount("_RefractionAmount",FLOAT)=1
 			_RefractionRGBSplit("_RefractionRGBSplit",FLOAT)=0.01
 			_NormalRGBSplit("_NormalRGBSplit",FLOAT)=1
+
 			[HDR]
 			_RimColor("_RimColor",COLOR)=(1,1,1,1)
 			_RimPower("_RimPower",FLOAT)=1
@@ -48,8 +54,7 @@
           Tags {"Queue"="Transparent" "RenderType"="Transparent+30" "IgnoreProjector" = "True" }
 		  Cull Off
 		 
-		
-	
+
         // Grab the screen behind the object into _MyGrabTexture
         GrabPass { "_MyGrabTexture" }
 		  Pass {
@@ -63,12 +68,15 @@
 		sampler2D _AdvancedPBRMap,_DetailNormalMap;
         sampler2D _MainTex,_NormalMap;
         sampler2D _MyGrabTexture;
+		float4 _ColorTintThin,_ColorTintThick;
+		float _ColorTintThicknessAmount;
 		float _RefractionAmount,_NormalAmount,_RimPower,_RimDampenPower,_AdditiveMainTex,_DetaiNormalMultiplier,_DetailNormalScale,_RefractionRGBSplit;
-		float4 _RimColor,_ColorTint;
+		float4 _RimColor;
 		float _ShadowAmount,_SpecularAmount,_NormalDisplacementAmount,_NormalRGBSplit,_RimAlphaPower,_RimAlphaAmount,_RimDisplacement;
 		float4 _EmissionColor;
 		sampler2D _EmissionMap;
 		samplerCUBE _ReflectionProbe;
+		float _CurvatureAmount;
 		float _ReflectionProbeAmount,_ReflectionProbeRim,_Opacity,_AdditiveGrabTex;
         struct Input {
 			float2 uv_MainTex;
@@ -105,9 +113,8 @@
 
             float4 hpos = UnityObjectToClipPos (v.vertex);
             o.grabUV = ComputeGrabScreenPos(hpos);	
-			  o.grabUVo =  o.grabUV;	
+			o.grabUVo =  o.grabUV;	
 			float3 influence = float3(0,0,0);
-			//influence += (((normalize(normal)),_NormalDisplacementAmount)) ;
 			influence -= normalize(v.normal) * _NormalDisplacementAmount;
 			influence += ((thick));
 			influence *= dotProduct;
@@ -115,22 +122,22 @@
 
 			o.grabUV.xyz += (influence * _RefractionAmount);
 			o.grabUV.xyz += float3(0.5,0.5,0.5);
-		//	o.grabUV.xyz += ((thick)-0.5) * _RefractionAmount;
+
 	
         }
 
  
         void surf (Input IN, inout SurfaceOutput o) {
 
-				float camDist = clamp(distance(IN.worldPos, _WorldSpaceCameraPos)*0.1,0,1);
-				fixed3 normal = UnpackNormal(tex2D(_NormalMap, IN.uv_MainTex)); 
-				normal.z = normal.z / _NormalAmount; 
+			float camDist = clamp(distance(IN.worldPos, _WorldSpaceCameraPos)*0.1,0,1);
+			fixed3 normal = UnpackNormal(tex2D(_NormalMap, IN.uv_MainTex)); 
+			normal.z = normal.z / _NormalAmount; 
 
-				fixed3 detNorm = UnpackNormal(tex2D(_DetailNormalMap, IN.uv_MainTex * _DetailNormalScale)) ; 
-				detNorm.z = detNorm.z / (1+_DetaiNormalMultiplier); 
+			fixed3 detNorm = UnpackNormal(tex2D(_DetailNormalMap, IN.uv_MainTex * _DetailNormalScale)) ; 
+			detNorm.z = detNorm.z / (1+_DetaiNormalMultiplier); 
 			IN.grabUV = lerp (IN.grabUVo,IN.grabUV,camDist);
-			 float4 thick =  tex2D (_AdvancedPBRMap,IN.uv_MainTex).g *_ThicknessAmount;
-
+			float4 thick =  tex2D (_AdvancedPBRMap,IN.uv_MainTex).g *_ThicknessAmount;
+			float4 curve =  tex2D (_AdvancedPBRMap,IN.uv_MainTex).b *_CurvatureAmount;
 			float4 pCoordR = UNITY_PROJ_COORD(IN.grabUV + float4(normal*_NormalRGBSplit*_RefractionRGBSplit* 0.01,thick.r*_RefractionRGBSplit * 0.01)  );
 			float4 pCoordG = UNITY_PROJ_COORD(IN.grabUV- float4(normal*_NormalRGBSplit*_RefractionRGBSplit* 0.01,thick.r*_RefractionRGBSplit * 0.01));
 			float4 pCoordB = UNITY_PROJ_COORD(IN.grabUV);
@@ -140,11 +147,10 @@
 			float grabTexB= tex2Dproj( _MyGrabTexture, pCoordB).b;
 			float3 grabTex = float3(grabTexR,grabTexG,grabTexB) * _AdditiveGrabTex;
 			float3 mainTex = tex2D (_MainTex,IN.worldRefl).rgb;
-			grabTex *= _ColorTint;
+			grabTex *= lerp(_ColorTintThin,_ColorTintThick,_ColorTintThicknessAmount * thick * curve);
 
 
-				o.Normal = normalize(normal + detNorm);
-
+			o.Normal = normalize(normal + detNorm);
 
 			half rim = 1.0 - saturate(dot (normalize(IN.viewDir), o.Normal));
 			float rimLight = (pow (rim, _RimPower));
@@ -152,14 +158,16 @@
 			
 			float3 rimCol = ((mainTex*_AdditiveMainTex)+grabTex)*_RimColor;
 			o.Emission = tex2D(_EmissionMap,IN.uv_MainTex) * _EmissionColor ;
-            o.Albedo = lerp((mainTex*_AdditiveMainTex)+grabTex,rimCol,rimLight) ;
+            o.Albedo = lerp((mainTex*_AdditiveMainTex)+grabTex,rimCol,rimLight);
 			o.Alpha = clamp(1-(pow(rim,_RimAlphaPower)*_RimAlphaAmount),0,1);
 			o.Albedo += texCUBE (_ReflectionProbe,IN.worldRefl) * _ReflectionProbeAmount * pow(rim,_ReflectionProbeRim) ;
+
+			o.Alpha = lerp (0,o.Alpha,_Opacity);
 			//o.Albedo=thick;
         }
         ENDCG
    
     }
 	FallBack "Diffuse"
-	CustomEditor "MaterialFX.MaterialFX_Glass_ShaderEditor"
+
 }

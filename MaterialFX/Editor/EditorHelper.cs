@@ -5,7 +5,7 @@ using UnityEditor;
 using System.IO;
 namespace MaterialFX
 {
-    public enum UniformType { UVMODE, PBRMAP, FXMAP, TEXTURE, FLOAT, INT, HDRCOLOR, COLOR, RANGE1, RANGE2, RANGE4, RANGE8, RANGE16, RANGE32, RANGE64, RANGE128, RANGE256, NORMALRANGE, RANGENEG1TO1, TESSRANGE, DISPLACEAMOUNT, RIMSETTING }
+    public enum UniformType { UVMODE, PBRMAP, FXMAP, TEXTURE, FLOAT, INT, HDRCOLOR, COLOR, RANGE1, RANGE2, RANGE4, RANGE8, RANGE16, RANGE32, RANGE64, RANGE128, RANGE256, NORMALRANGE, RANGENEG1TO1, TESSRANGE, DISPLACEAMOUNT, RIMSETTING, BLENDMODE }
     public class UniformProperty
     {
         public string displayName;
@@ -29,21 +29,27 @@ namespace MaterialFX
         public string displayName;
         public bool hasTexture;
         public bool isCubeMap;
+        public bool hasHelp;
+        public string helpText;
         public List<UniformProperty> uniformProperties;
 
         public TextureProperties()
         {
             hasTexture = true;
             isCubeMap = false;
+            hasHelp = false;
+            helpText = "";
             uniformProperties = new List<UniformProperty>();
         }
     }
 
     public static class EditorHelper
     {
-        public enum RenderDisplayModes { Material_FX, Unity_Standard, Normal, Metallic, Smoothness, Thickness, Curvature, Emission, Subsurface_Scattering, Environment_FX_Map, Iridescence, Reflection_Probe_Boost, Additional_Cubemap, Checker_Pattern }
+        public enum RenderDisplayModes { Material_FX, Unity_Standard, Normal, Metallic, Smoothness, Thickness, Curvature, Emission, Occlussion, Subsurface_Scattering, Environment_FX_Map, Iridescence, Reflection_Probe_Boost, Additional_Cubemap, Checker_Pattern, GrabTexture }
         public enum TextureWorkflow { Material_FX, Unity_Standard, Substance_Texture_Maps }
         public enum TextureChannels { Red, Green, Blue, Alpha, Gray, RGB, RGBA }
+        public enum ShaderBlendModes {  Normal, Additive, Subtractive, Multiply, Divide, Overlay, ClipBlack, ClipWhite, Mod, DstAlpha, OneMinusDstAlpha, SrcAlpha, OneMinusSrcAlpha, Mix, MixOverlay, LighterColor, DarkerColor, ColorDodge, ColorBurn }
+
         public static bool isInitialized = false;
 
         public static Color backgroundDefault;
@@ -56,7 +62,7 @@ namespace MaterialFX
         public static Color ButtonBackgroundDelete = new Color(.8f, .2f, .2f, 1f);
         public static GUIStyle ButtonDisabled, ButtonEnabled, TextHighlight, TextHeading, ButtonHighlight, PopUp, PopUpLabel;
         public static int TextureWidth = 64;
-        public static string[] renderModeStrings, textureModeStrings, textureChannelStrings;
+        public static string[] renderModeStrings, textureModeStrings, textureChannelStrings,blendModeStrings;
         public static int aboutTab = 0;
         public static void About ()
         {
@@ -189,9 +195,16 @@ namespace MaterialFX
             textureChannelStrings = new string[System.Enum.GetValues(typeof(TextureChannels)).Length];
             for (int i = 0; i < textureChannelStrings.Length; i++)
             {
-                TextureChannels wf = (TextureChannels)i;
-                textureChannelStrings[i] = wf.ToString().Replace("_", " ");
+                TextureChannels tc = (TextureChannels)i;
+                textureChannelStrings[i] = tc.ToString().Replace("_", " ");
             }
+            blendModeStrings = new string[System.Enum.GetValues(typeof(ShaderBlendModes)).Length];
+            for (int i = 0; i < blendModeStrings.Length; i++)
+            {
+                ShaderBlendModes bm = (ShaderBlendModes)i;
+                blendModeStrings[i] = bm.ToString().Replace("_", " ");
+            }            
+
             TextHeading = new GUIStyle(GUI.skin.label)
             {
                 padding = new RectOffset(0, 0, 0, 0),
@@ -374,7 +387,7 @@ namespace MaterialFX
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
                 GUILayout.Space(5);
-                EditorHelper.Slider(targetMat, "Triplanar Scale", prop + "TriplanarScale", .01f, 8f);
+                EditorHelper.Slider(targetMat, "Triplanar Scale", prop + "TriplanarScale", .0001f, 4f);
                 EditorHelper.Slider(targetMat, "Triplanar Blend", prop + "TriplanarBlend", .0001f, 1f);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
@@ -472,10 +485,10 @@ namespace MaterialFX
         public static void HelpButton(string key)
         {
             Color bgColor = GUI.backgroundColor;
-            GUI.backgroundColor = EditorHelper.ButtonBackgroundActive;
+            GUI.backgroundColor = EditorHelper.backgroundColorDark;
             if (HelpToggles.ContainsKey(key))
             {
-                if (HelpToggles[key]) GUI.backgroundColor = EditorHelper.backgroundColorDark;
+                if (HelpToggles[key]) GUI.backgroundColor = EditorHelper.ButtonBackgroundActive;
             }
 
             if (GUILayout.Button("?", GUILayout.Width(20)))
@@ -592,6 +605,18 @@ namespace MaterialFX
 
         }
 
+        public static void BlendMode(Material targetMat, string title, string prop)
+        {
+            GUILayout.BeginHorizontal();
+            int val = targetMat.GetInt(prop);
+            int val2 = EditorHelper.GUIDropDown(val, title, 140, blendModeStrings, false, true);
+            if (val2 >= 0)
+            {
+                if (val != val2) { targetMat.SetInt(prop, val2); }
+            }
+            GUILayout.EndHorizontal();
+        }
+
         static bool FXMapEnabled = false;
         public static void GenerateFXMap(Material targetMat, string title, string prop)
         {
@@ -599,11 +624,17 @@ namespace MaterialFX
 
             string buttonString = "Repack Textures into MaterialFX FX Map";
             if (FXMapEnabled) { GUI.backgroundColor = EditorHelper.ButtonBackgroundDelete; buttonString = "Cancel"; }
-
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button(buttonString))
             {
                 FXMapEnabled = !FXMapEnabled;
             }
+            EditorHelper.HelpButton("prop" + "_help");
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            EditorHelper.HelpItem("prop" + "_help", "Text");
+            GUILayout.EndHorizontal();
+
             GUI.backgroundColor = EditorHelper.backgroundDefault;
             if (FXMapEnabled == true)
             {
@@ -665,7 +696,17 @@ namespace MaterialFX
 
             GUILayout.BeginHorizontal("box");
             GUILayout.BeginVertical();
+          
+            if (!props.hasHelp) { 
             GUILayout.Label(props.displayName, EditorHelper.TextHeading);
+            } else  {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(props.displayName, EditorHelper.TextHeading);
+                HelpButton(props.displayName + "_help");
+
+                GUILayout.EndHorizontal();
+            }
+            HelpItem(props.displayName + "_help", props.helpText);
             GUILayout.Space(5);
             GUILayout.BeginHorizontal();
             if (props.hasTexture)
@@ -705,7 +746,7 @@ namespace MaterialFX
                 if (p.uniformType == UniformType.UVMODE) { EditorHelper.UVMode(targetMat, p.displayName, p.uniformName); }
                 if (p.uniformType == UniformType.PBRMAP) { GeneratePBRMap(targetMat, p.displayName, p.uniformName); }
                 if (p.uniformType == UniformType.FXMAP) { GenerateFXMap(targetMat, p.displayName, p.uniformName); }
-
+                if (p.uniformType == UniformType.BLENDMODE) { BlendMode (targetMat, p.displayName, p.uniformName); }
 
             }
             GUILayout.EndVertical();

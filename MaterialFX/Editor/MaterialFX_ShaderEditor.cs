@@ -40,71 +40,97 @@ namespace MaterialFX
             targetMat.SetInt("_EditorTab", editorTab);            
         }
 
-        void ShowLightingArea()
+
+
+        void ShowTextureArea()
         {
+            GUILayout.BeginHorizontal();
+            int workflow = EditorHelper.GUIDropDown((int)textureWorkflow, "Texture Workflow", 120, EditorHelper.textureModeStrings, true);
+            if (workflow >= 0)
+            {
+                textureWorkflow = (EditorHelper.TextureWorkflow)workflow;
+                targetMat.SetInt("_TextureWorkflow", workflow);
+            }
+            EditorHelper.HelpButton("workflow");
+            GUILayout.EndHorizontal();
+            EditorHelper.HelpItem("workflow", "<b>Texture Workflow</b>\n\n<b>Material FX</b> (Preferred)\n<color=silver>Adds new effects to your material, but has a rquired PBR map to use, which we are calling the advancedPBR Map here, however, it's essenailly a Metallic(r) Smoothnes(a) teture, with the green channel being used to inclue thickness, and blue for curvature.  The benefit here is this texture can work with Unity\ndefault shader so you can mix and match shaders as needed, and can even extend your ability to make your own custom effects / surface shaders.\n\n</color><b>Unity Standard</b>\n<color=silver>Uses Unity native Metallic Smoothnes Map. Primarily used for A-B Comparisn.\n\n</color><b>Substance Texture Maps</b><color=silver>\nAdds a roughness channel.\n\n<i>In Developemnt : A way to repack the AdvancedPBR map texture using an inline image conversion / channel repack.</i></color>");
+            GUILayout.Space(10);
+
+            string albedoTitle = "Albedo";
+            if (textureWorkflow == EditorHelper.TextureWorkflow.Substance_Texture_Maps) { albedoTitle = "Base Color"; }
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "_MainTex";
+            tempProp.displayName = albedoTitle;
+            tempProp.hasHelp = true;
+            tempProp.helpText = "The albedo channel, also known as diffuse or base color, is the texture you want to apply to your model's surface color\n\n<b>Albedo Amount:</b> Fade between Color and Texture (with Color)\n<b>Texutring Mode</b> : Choose between UV (Model Default) and Triplanar (No UV Maps)";
+            tempProp.uniformProperties.Add(new UniformProperty("_Color", "Color (Tint)", UniformType.COLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_Colored", albedoTitle + " Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_MainTex", "Texturing Mode", UniformType.UVMODE));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
+            if (textureWorkflow == EditorHelper.TextureWorkflow.Material_FX || textureWorkflow == EditorHelper.TextureWorkflow.Unity_Standard)
+            {
+                tempProp = new TextureProperties();
+                tempProp.unifromName = "_AdvancedPBRMap";
+                tempProp.displayName = "Metallic Smoothness";
+                tempProp.hasHelp = true;
+                tempProp.helpText = "This channel is very similar to the Metallic(R) and Smoothness(A) Map which is standard by Unity. However, MaterialFX also makes use of the unused Green and Blue Channels. Green channel is used for Thickness, and the Blue channel is used for Curvature.\n\nAdding these 2 maps will widely open up creative features you'll see used in this shader, as things like Subsurface scattering rely on thickness and curvature to know how much light to transmit.\n\nAn advanced PBR Map will work just fine with unity's standard shader (It ignores the G&B Channels), however If you only have Metallic Smoothness, you'll need to generate Thickness and Curvature maps, and then repack them using the tool provided below.  You can generate these maps using either Substance (paid) or xNormal (free)";
+                tempProp.uniformProperties.Add(new UniformProperty("_Metallic", "Metailic", UniformType.RANGE1));
+                tempProp.uniformProperties.Add(new UniformProperty("_Smoothness", "Smoothness", UniformType.RANGE1));
+                if (textureWorkflow == EditorHelper.TextureWorkflow.Material_FX)
+                {
+                    tempProp.displayName = "MaterialFX PBR Map";
+                    tempProp.uniformProperties.Add(new UniformProperty("_Thickness", "Thickness", UniformType.RANGE1));
+                    tempProp.uniformProperties.Add(new UniformProperty("_Curvature", "Curvature", UniformType.RANGE1));
+                }
+
+                tempProp.uniformProperties.Add(new UniformProperty("_AdvancedPBRMap", "Texturing Mode", UniformType.UVMODE));
+                tempProp.uniformProperties.Add(new UniformProperty("_AdvancedPBRMap", "Generate PBR Map", UniformType.PBRMAP));
+                EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+            }
+
+            if (textureWorkflow == EditorHelper.TextureWorkflow.Substance_Texture_Maps)
+            {
+                tempProp = new TextureProperties();
+                tempProp.unifromName = "_AdvancedPBRMap";
+                tempProp.displayName = "Metallic";
+             
+                tempProp.uniformProperties.Add(new UniformProperty("_Metallic", "Metailic", UniformType.RANGE1));
+                EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+                tempProp = new TextureProperties();
+                tempProp.unifromName = "_RoughnessMap";
+                tempProp.displayName = "Roughness";
+                tempProp.uniformProperties.Add(new UniformProperty("_AdvancedPBRMap", "Texturing Mode", UniformType.UVMODE));
+                tempProp.uniformProperties.Add(new UniformProperty("_Smoothness", "Roughness", UniformType.RANGE1));
+                EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+            }
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "_BumpMap";
+            tempProp.displayName = "Normal Map";
+
+            tempProp.uniformProperties.Add(new UniformProperty("_BumpMap", "Texturing Mode", UniformType.UVMODE));
+            tempProp.uniformProperties.Add(new UniformProperty("_NormalAmount", "Normal Amount", UniformType.NORMALRANGE));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "_AOMap";
+            tempProp.displayName = "Ambient Occlusion Map";
+            tempProp.uniformProperties.Add(new UniformProperty("_AOAmount", "AO Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_AOMutliply", "AO Power", UniformType.RANGE8));
+            tempProp.uniformProperties.Add(new UniformProperty("_AOCurvature", "AO Curvature", UniformType.RANGE1));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
 
             tempProp = new TextureProperties();
             tempProp.unifromName = "";
+            tempProp.displayName = "Material Overrides";
             tempProp.hasTexture = false;
-            tempProp.displayName = "Sub Surface Scattering";
-            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceAmount", "Subsurface Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceColor", "Subsurface Color", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceCurvatureAmount", "Curvature Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceRange", "Subsurface Range", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_SubsurfaceRimType", "Subsurface Rim Type", UniformType.RIMSETTING));
-            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfacePower", "Subsurface Rim Power", UniformType.RANGE32));
-            EditorHelper.ShowTextureUniforms(targetMat,tempProp);
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "_EmissionMap";
-            tempProp.displayName = "Emission Map";
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionAmount", "Emission Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionColor", "Color (Tint)", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionBoostColor", "Boost Color", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionBoostRimType", "Boost Rim Type", UniformType.RIMSETTING));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionBoostRimPower", "Boost Rim Power", UniformType.RANGE32));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionDampenRimAmount", "Dampen Rim Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionDampenRimType", "Dampen Rim Type", UniformType.RIMSETTING));
-            tempProp.uniformProperties.Add(new UniformProperty("_EmissionDampenRimPower", "Dampen Rim Power", UniformType.RANGE32));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "";
-            tempProp.displayName = "Iridescence";
-            tempProp.hasTexture = false;
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimAmount", "Iridescence Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceScale", "Iridescence Scale", UniformType.RANGE4));
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceSpeed", "Iridescence Speed", UniformType.RANGE4));
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceCurvature", "Curvature Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceTint", "Color (Tint)", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimType", "Rim Type", UniformType.RIMSETTING));
-            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimPower", "Rim Power", UniformType.RANGE32));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "";
-            tempProp.displayName = "Reflection Probe Boost";
-            tempProp.hasTexture = false;
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionAmount", "Boost Amount", UniformType.RANGE8));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionTint", "Reflection Tint", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionRimType", "Reflection Rim Type", UniformType.RIMSETTING));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionPower", "Reflection Power", UniformType.RANGE32));
-
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionDampenRimAmount", "Dampen Rim Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionDampenRimType", "Dampen Rim Type", UniformType.RIMSETTING));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionDampenRimPower", "Dampen Rim Power", UniformType.RANGE32));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "_ReflectionCube";
-            tempProp.displayName = "Additional Relfection Cubemap";
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeAmount", "Emission Amount", UniformType.RANGE8));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeTint", "Reflection Tint", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubePower", "Reflection Power", UniformType.RANGE32));
-            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeNormalAmount", "Normal Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_ForceMetallic", "Force Metallic", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_ForceSmoothness", "Force Smoothness", UniformType.RANGE1));
             EditorHelper.ShowTextureUniforms(targetMat, tempProp);
         }
+
 
         void ShowDetailArea()
         {
@@ -152,6 +178,78 @@ namespace MaterialFX
 
         }
 
+        void ShowLightingArea()
+        {
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "";
+            tempProp.hasTexture = false;
+            tempProp.displayName = "Sub Surface Scattering";
+            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceAmount", "Subsurface Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceColor", "Subsurface Color", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceCurvatureAmount", "Curvature Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfaceRange", "Subsurface Range", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_SubsurfaceRimType", "Subsurface Rim Type", UniformType.RIMSETTING));
+            tempProp.uniformProperties.Add(new UniformProperty("_SubSurfacePower", "Subsurface Rim Power", UniformType.RANGE32));
+            EditorHelper.ShowTextureUniforms(targetMat,tempProp);
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "_EmissionMap";
+            tempProp.displayName = "Emission Map";
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionAmount", "Emission Amount", UniformType.RANGE1));
+
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionColor", "Color (Tint)", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionBoostColor", "Boost Color", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionBoostRimType", "Boost Rim Type", UniformType.RIMSETTING));
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionBoostRimPower", "Boost Rim Power", UniformType.RANGE32));
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionDampenRimAmount", "Dampen Rim Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionDampenRimType", "Dampen Rim Type", UniformType.RIMSETTING));
+            tempProp.uniformProperties.Add(new UniformProperty("_EmissionDampenRimPower", "Dampen Rim Power", UniformType.RANGE32));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "";
+            tempProp.displayName = "Iridescence";
+            tempProp.hasTexture = false;
+
+
+
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceAmount", "Iridescence Amount", UniformType.RANGE1));
+
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceScale", "Iridescence Scale", UniformType.RANGE4));
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceSpeed", "Iridescence Speed", UniformType.RANGE4));
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceCurvature", "Curvature Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceTint", "Color (Tint)", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimType", "Rim Type", UniformType.RIMSETTING));
+            tempProp.uniformProperties.Add(new UniformProperty("_IridescenceRimPower", "Rim Power", UniformType.RANGE32));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "";
+            tempProp.displayName = "Reflection Probe Boost";
+            tempProp.hasTexture = false;
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionAmount", "Boost Amount", UniformType.RANGE8));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionTint", "Reflection Tint", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionRimType", "Reflection Rim Type", UniformType.RIMSETTING));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionPower", "Reflection Power", UniformType.RANGE32));
+
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionDampenRimAmount", "Dampen Rim Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionDampenRimType", "Dampen Rim Type", UniformType.RIMSETTING));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionDampenRimPower", "Dampen Rim Power", UniformType.RANGE32));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+
+            tempProp = new TextureProperties();
+            tempProp.unifromName = "_ReflectionCube";
+            tempProp.displayName = "Additional Relfection Cubemap";
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeAmount", "Emission Amount", UniformType.RANGE8));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeTint", "Reflection Tint", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubePower", "Reflection Power", UniformType.RANGE32));
+            tempProp.uniformProperties.Add(new UniformProperty("_ReflectionCubeNormalAmount", "Normal Amount", UniformType.RANGE1));
+            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
+        }
+
+
         void ShowEnvironmentalArea()
         {
             tempProp = new TextureProperties();
@@ -187,82 +285,6 @@ namespace MaterialFX
 
         }
 
-        void ShowTextureArea()
-        {
-            GUILayout.BeginHorizontal();
-            int workflow = EditorHelper.GUIDropDown((int)textureWorkflow, "Texture Workflow", 120, EditorHelper.textureModeStrings, true);
-            if (workflow >= 0)
-            {
-                textureWorkflow = (EditorHelper.TextureWorkflow)workflow;
-                targetMat.SetInt("_TextureWorkflow", workflow);
-            }
-            EditorHelper.HelpButton("workflow");
-            GUILayout.EndHorizontal();
-            EditorHelper.HelpItem("workflow", "<b>Texture Workflow</b>\n\n<b>Material FX</b> (Preferred)\n<color=silver>Adds new effects to your material, but has a rquired PBR map to use, which we are calling the advancedPBR Map here, however, it's essenailly a Metallic(r) Smoothnes(a) teture, with the green channel being used to inclue thickness, and blue for curvature.  The benefit here is this texture can work with Unity\ndefault shader so you can mix and match shaders as needed, and can even extend your ability to make your own custom effects / surface shaders.\n\n</color><b>Unity Standard</b>\n<color=silver>Uses Unity native Metallic Smoothnes Map. Primarily used for A-B Comparisn.\n\n</color><b>Substance Texture Maps</b><color=silver>\nAdds a roughness channel.\n\n<i>In Developemnt : A way to repack the AdvancedPBR map texture using an inline image conversion / channel repack.</i></color>");
-            GUILayout.Space(10);
-
-            string albedoTitle = "Albedo";
-            if (textureWorkflow == EditorHelper.TextureWorkflow.Substance_Texture_Maps) { albedoTitle = "Base Color"; }
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "_MainTex";
-            tempProp.displayName = albedoTitle;
-            tempProp.uniformProperties.Add(new UniformProperty("_Color", "Color (Tint)", UniformType.COLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_Colored", albedoTitle + " Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_MainTex", "Texturing Mode", UniformType.UVMODE));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-
-            if (textureWorkflow == EditorHelper.TextureWorkflow.Material_FX || textureWorkflow == EditorHelper.TextureWorkflow.Unity_Standard)
-            {
-                tempProp = new TextureProperties();
-                tempProp.unifromName = "_AdvancedPBRMap";
-                tempProp.displayName = "Metallic Smoothness";
-                tempProp.uniformProperties.Add(new UniformProperty("_Metallic", "Metailic", UniformType.RANGE1));
-                tempProp.uniformProperties.Add(new UniformProperty("_Smoothness", "Smoothness", UniformType.RANGE1));
-                if (textureWorkflow == EditorHelper.TextureWorkflow.Material_FX)
-                {
-                    tempProp.displayName = "MaterialFX PBR Map";
-                    tempProp.uniformProperties.Add(new UniformProperty("_Thickness", "Thickness", UniformType.RANGE1));
-                    tempProp.uniformProperties.Add(new UniformProperty("_Curvature", "Curvature", UniformType.RANGE1));
-                }
-                tempProp.uniformProperties.Add(new UniformProperty("_AdvancedPBRMap", "Generate PBR Map", UniformType.PBRMAP));
-                EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-            }
-
-            if (textureWorkflow == EditorHelper.TextureWorkflow.Substance_Texture_Maps)
-            {
-                tempProp = new TextureProperties();
-                tempProp.unifromName = "_AdvancedPBRMap";
-                tempProp.displayName = "Metallic";
-                tempProp.uniformProperties.Add(new UniformProperty("_Metallic", "Metailic", UniformType.RANGE1));
-                EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-                tempProp = new TextureProperties();
-                tempProp.unifromName = "_RoughnessMap";
-                tempProp.displayName = "Roughness";
-                tempProp.uniformProperties.Add(new UniformProperty("_Smoothness", "Roughness", UniformType.RANGE1));
-                EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-            }
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "_BumpMap";
-            tempProp.displayName = "Normal Map";
-            tempProp.uniformProperties.Add(new UniformProperty("_NormalAmount", "Normal Amount", UniformType.NORMALRANGE));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "_AOMap";
-            tempProp.displayName = "Ambient Occlusion Map";
-            tempProp.uniformProperties.Add(new UniformProperty("_AOAmount", "AO Amount", UniformType.RANGE1));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-
-            tempProp = new TextureProperties();
-            tempProp.unifromName = "";
-            tempProp.displayName = "Material Overrides";
-            tempProp.hasTexture = false;
-            tempProp.uniformProperties.Add(new UniformProperty("_ForceMetallic", "Force Metallic", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_ForceSmoothness", "Force Smoothness", UniformType.RANGE1));
-            EditorHelper.ShowTextureUniforms(targetMat, tempProp);
-        }
 
     }
 
