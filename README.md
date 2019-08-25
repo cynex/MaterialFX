@@ -5,7 +5,6 @@ Material FX : A powerful free shader for unity.
 
 Features:
 
-- Standard Unity Shader Compliant
 - Subsurface Scattering
 - Tessellation & Displacement
 - Height map(Parallax effect)
@@ -15,6 +14,7 @@ Features:
 - Additional Cubemap Reflections
 - FX Map(Growth, Snow, Wetness)
 - Easy to use UI with included tools to repackage textures
+- Standard Unity Shader Compliant (No LWRP, HDRP support as of yet)
 
 Requirements:
 
