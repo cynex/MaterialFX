@@ -41,3 +41,4 @@ MaterialFX also uses another new texture called the Environment FXMap. This is a
 Planned revisions: (prior to Unity Asset store launch)
 - Glass Shader
 - Low Spec Variants
+- Investigate LWRP, HDRP workflows for solution
