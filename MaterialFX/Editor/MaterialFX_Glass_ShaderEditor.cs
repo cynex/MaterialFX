@@ -183,7 +183,7 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_GlassRefractionRGBSplit", "Refraction RGB Split", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassNormalRGBSplit", "Normal RGB Split", UniformType.RANGE1));
 
-            //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimColor", "Rim Color", UniformType.HDRCOLOR));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassRimColor", "Reflection Rim Color", UniformType.HDRCOLOR));
             //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimPower", "Rim Power", UniformType.RANGE16));
             //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimDampenPower", "Rim Dampen Power", UniformType.RANGE1));
             //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimAlphaPower", "Rim Alpha Power", UniformType.RANGE16));

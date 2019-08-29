@@ -465,7 +465,7 @@
 				float _GlassReflectionRimDampenPower,_GlassReflectionRimDampenType,_GlassReflectionRimDampenAmount;
 				float _GlassReflectionRimAlphaPower,_GlassReflectionRimAlphaType,_GlassReflectionRimAlphaAmount;*/
 
-				fixed4 rimCol = _GlassRimColor; 
+				fixed4 rimCol = float4(grabTex,1)*_GlassRimColor; 
 				if (_GlassReflectionRimType <0) {
 					rimCol = lerp (rimCol,_GlassRimColor*pow(1-rim,_GlassReflectionRimPower+0.001),_GlassReflectionRimType * -1);
 				}
