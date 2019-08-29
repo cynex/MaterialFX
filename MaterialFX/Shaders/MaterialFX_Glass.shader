@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
- Shader "MaterialFX/MaterialFX" {
+﻿ Shader "MaterialFX/MaterialFX_Glass" {
         Properties {
 			// Used for Edtor : Current Tab
 			[HideInInspector]
@@ -11,13 +9,6 @@
 			//Texture Workflow (0=MFX,1=UNITY,2=Substance [only for roughness- TBD : Roughness->Smoothness converter)
 			[HideInInspector]
 			_TextureWorkflow("Texture Workflow", INT) = 0
-
-			//--------Tessellation			
-			_Tess ("Tessellation", Range(1,32)) =1
-			_Phong("Phong",Range(0,4))=0
-			_TessDistMin("_TessDistMin",Range(.1,50)) = 10.0
-			_TessDistMax("_TessDistMax",Range(.1,150)) = 25.0
-
 
 			//Texture Maps
 			_MainTex ("Base (RGB)", 2D) = "white" {}
@@ -147,23 +138,75 @@
 			_DetailNormalScale("Detail Normal Scale",Range(0.1,32.0)) = 4        
 			_TessellationUniform("Tessellation Uniform", Range(1, 64)) = 1
 
+
+
+			/**********GLASS*************/
+
+			_GlassShadowAmount("_GlassShadowAmount",Range(0,1))=1
+			[HDR]
+			_GlassSpecularColor("_GlassSpecularColor",COLOR)=(1,1,1,1)		
+			_GlassSpecularAmount("_GlassSpecularAmount",Range(4,2048))=40
+			_GlassNormalDisplacementAmount("_GlassNormalDisplacementAmount",Range(0,8))=1
+			_GlassRimDisplacement("_GlassRimDisplacement",FLOAT)=1
+			_GlassNormalAmount("_GlassNormalAmount",FLOAT)=1
+			_GlassThicknessAmount("_GlassThicknessAmount",Range(0,4))=1
+			_GlassAdditiveMainTex("_GlassAdditiveMainTex",FLOAT)=.25
+			_GlassAdditiveGrabTex("_GlassAdditiveGrabTex",FLOAT)=1
+			_GlassColorTintThin("_ColorTintThin",COLOR)=(1,1,1,1)
+			_GlassColorTintThick("_ColorTintThick",COLOR)=(1,1,1,1)
+			_GlassColorTintThicknessAmount("_ColorTintThicknessAmount",FLOAT)=1
+			_GlassCurvatureAmount("_CurvatureAmount",float)=1			
+			_GlassRefractionAmount("_RefractionAmount",FLOAT)=1
+			_GlassRefractionRGBSplit("_RefractionRGBSplit",FLOAT)=0.01
+			_GlassNormalRGBSplit("_NormalRGBSplit",FLOAT)=1
+
+			[HDR]
+			_GlassReflectionRimPower("_GlassReflectionRimPower",FLOAT)=1
+			_GlassReflectionRimType("_GlassReflectionRimType",FLOAT)=0
+			_GlassReflectionRimAmount("_GlassReflectionRimAmount",FLOAT)=0
+
+			_GlassReflectionRimDampenPower("_GlassReflectionRimDampenPower",FLOAT)=1
+			_GlassReflectionRimDampenType("_GlassReflectionRimDampenType",FLOAT)=0
+			_GlassReflectionRimDampenAmount("_GlassReflectionRimDampenAmount",FLOAT)=0
+
+			_GlassReflectionRimAlphaPower("_GlassReflectionRimAlphaPower",FLOAT)=1
+			_GlassReflectionRimAlphaType("_GlassReflectionRimAlphaType",FLOAT)=0
+			_GlassReflectionRimAlphaAmount("_GlassReflectionRimAlphaAmount",FLOAT)=0
+
+			_GlassRimColor("_RimColor",COLOR)=(1,1,1,1)
+			_GlassRimPower("_RimPower",FLOAT)=1
+			_GlassRimDampenPower("_RimDampenPower",FLOAT)=1
+			_GlassRimAlphaPower("_RimAlphaPower",FLOAT)=1
+			_GlassRimAlphaAmount("_RimAlphaAmount",FLOAT)=1
+			_Opacity("_Opacity",Range(0,1))=1
+
+
+
 			_CheckerDensity("_CheckerDensity",FLOAT)=20
 			_ForceMetallic("_ForceMetallic",RANGE(0,1))=0
 			_ForceSmoothness("_ForceSmoothness",RANGE(0,1))=0
         }
 	
         SubShader {
-            Tags { "RenderType"="Opaque" }
-            LOD 300
+			Tags {"Queue"="Transparent" "RenderType"="Transparent+30" "IgnoreProjector" = "True" }
+			LOD 300
 			Cull Off
+
+			  // Grab the screen behind the object into _GlassGrabTexture
+			GrabPass { "_GrabTexture" }
+			Pass {
+					 ColorMask 0
+				 }
+
             CGPROGRAM
-			#pragma surface surf StandardDefaultGI addshadow fullforwardshadows vertex:disp tessellate:tessDistance nolightmap tessphong:_Phong 
-            #pragma target 4.6
+			#pragma surface surf SimpleSpecular vertex:vert alpha
+			#pragma target 4.6
+			#pragma debug
 
-			#include "Tessellation.cginc"
-			#include "UnityPBSLighting.cginc"
-
-			struct Input {
+			float _GlassReflectionRimPower,_GlassReflectionRimType,_GlassReflectionRimAmount;
+			float _GlassReflectionRimDampenPower,_GlassReflectionRimDampenType,_GlassReflectionRimDampenAmount;
+			float _GlassReflectionRimAlphaPower,_GlassReflectionRimAlphaType,_GlassReflectionRimAlphaAmount;
+			/*struct Input {
                 float2 uv_MainTex;
 				float3 viewDir;
 				float3 worldPos;				
@@ -171,7 +214,18 @@
 				float3 worldRefl;
 				float3 localRefl;  INTERNAL_DATA				 
 				float3 worldNorm;
-            };
+            };*/
+			
+        struct Input {
+			float2 uv_MainTex;
+			float3 worldPos;
+            float4 grabUV;		
+			float4 grabUVo;	
+			float3 viewDir;
+			INTERNAL_DATA
+			float3 worldRefl;
+        };
+
 			struct appdata {
                 float4 vertex : POSITION;
                 float4 tangent : TANGENT;
@@ -233,95 +287,116 @@
 			float _ForceSmoothness,_ForceMetallic;
 
 
+			//---------------------------------------------------------
+			float4 _GlassColorTintThin,_GlassColorTintThick;
+			float _GlassColorTintThicknessAmount;
+			float _GlassRefractionAmount,_GlassNormalAmount,_GlassRimPower,_GlassRimDampenPower,_GlassAdditiveMainTex,_GlassRefractionRGBSplit;
+			float4 _GlassRimColor,_GlassSpecularColor;
+			float _GlassCurvatureAmount,_GlassShadowAmount,_GlassSpecularAmount,_GlassNormalDisplacementAmount,_GlassNormalRGBSplit,_GlassRimAlphaPower,_GlassRimAlphaAmount,_GlassRimDisplacement;
+			float _GlassThicknessAmount,_GlassAdditiveGrabTex;
 
-
+			sampler2D _GrabTexture;
+			float _Opacity;
 
 			// Helper functions for multiple shaders
 			#include "./MaterialFX_ShaderFunctions.cginc"
 
-	void CopyOutputStandardToMaterialFX (SurfaceOutputStandard o) {
-		mfxOut.Albedo = o.Albedo;		   
-		mfxOut.Normal = o.Normal;		   
-		mfxOut.Emission = o.Emission;
-		mfxOut.Metallic = o.Metallic;		
-		mfxOut.Smoothness = o.Smoothness;	 
-		mfxOut.Alpha = o.Alpha;			
-		mfxOut.Occlusion = o.Occlusion;   
-	}
 
-	void CopyMaterialFXToOutputStandard (inout SurfaceOutputStandard o) {
-		o.Albedo=mfxOut.Albedo;		
-		o.Normal=mfxOut.Normal;		
-		o.Emission = mfxOut.Emission;
-		o.Metallic=mfxOut.Metallic;				
-		o.Smoothness=mfxOut.Smoothness;		
-		o.Alpha=mfxOut.Alpha;		
-		o.Occlusion=mfxOut.Occlusion;
-	}
+		/*	void GetGlassRIM (Input IN){
+				half glass_rim = 1.0 - saturate(dot (normalize(IN.viewDir), oNormal));
+				float glass_rimLight = (pow (rim, _GlassRimPower));
+				glass_rimLight *= pow(1-glass_rim,_GlassRimDampenPower);
+			
+				float3 rimCol = ((mainTexColor*_GlassAdditiveMainTex)+grabTex)*_GlassRimColor;
 
 
-			// ---------------------------------------------------- Subsurface scattering
-			// based on Alan Zucconi's tutorial : https://www.alanzucconi.com/2017/08/30/fast-subsurface-scattering-2/
-			// with modification for thickness channel
-			inline fixed4 LightingStandardDefaultGI(SurfaceOutputStandard s, fixed3 viewDir, UnityGI gi)
-			{
-				// Original colour
-				fixed4 pbr = LightingStandard(s, viewDir, gi);
-				if (_SSRThickness >= 0) {	//if -1 ignore (passed)
-					// SSS Calculations
-					float3 light = gi.light.dir;
-					float3 viewDirection = viewDir;
-					float3 normal = s.Normal;
-					float3 H = normalize(light + normal * _SSSDistortion);
-					float VdotH = saturate(pow(dot(viewDirection, -H), _SSSPower)) * _SSSScale;
-					float3 res =saturate(pow(dot(viewDirection, -H),1));
-					float3 I = (res + _SSSAmbient) * _SSRThickness * _SubSurfaceColor * (_SubSurfaceAmount*0.02);											
-					pbr.rgb = pbr.rgb + gi.light.color * I;
+				fixed4 src = (tex2D(_EmissionMap,IN.uv_MainTex) * _EmissionColor * _EmissionAmount);
+				fixed4 dst=src;
+				fixed4 emissive = _EmissionBoostColor; 
+				if (_EmissionBoostRimType <0) {
+					emissive = lerp (emissive,_EmissionBoostColor*pow(1-rim,_EmissionBoostRimPower+0.001),_EmissionBoostRimType * -1);
 				}
-				
-				return pbr;
+				if (_EmissionBoostRimType > 0) {
+					emissive = lerp (emissive,_EmissionBoostColor*pow(rim,_EmissionBoostRimPower+0.001),_EmissionBoostRimType);
+				}
+				dst += emissive * _EmissionAmount;
+
+				fixed4 dampener = fixed4(1,1,1,1); 
+				if (_EmissionDampenRimType <0) {
+					dampener = lerp (dampener,fixed4(1,1,1,1)*pow(1-rim,_EmissionDampenRimPower+0.001),_EmissionDampenRimType * -1);
+				}
+				if (_EmissionDampenRimType > 0) {
+					dampener = lerp (dampener,fixed4(1,1,1,1)*pow(rim,_EmissionDampenRimPower+0.001),_EmissionDampenRimType);
+				}
+				dst = dst * 1-(dampener * (_EmissionDampenRimAmount));					
+				mfxOut.Emission = dst.rgb;				
+			}*/
+
+
+			void CopyOutputToMaterialFX (SurfaceOutput o) {
+				mfxOut.Albedo = o.Albedo;		
+				mfxOut.Normal = o.Normal;		
+				mfxOut.Emission = o.Emission;
+				mfxOut.Specular = o.Specular;  
+				mfxOut.Gloss = o.Gloss;		
+				mfxOut.Alpha = o.Alpha;	
 			}
 
-			 inline void LightingStandardDefaultGI_GI(
-                SurfaceOutputStandard s,
-                UnityGIInput data,
-                inout UnityGI gi)
-            {				
-                LightingStandard_GI(s, data, gi);
-            }
-
-			///--------------------------------------------- Tessellation : From Unity Docs
-
-			float _Phong;	
-			float _Tess,_TessDistMin,_TessDistMax;
-
-			float4 tessDistance (appdata v0, appdata v1, appdata v2) {
-				float minDist =_TessDistMin;
-				float maxDist = _TessDistMax;
-				return UnityDistanceBasedTess(v0.vertex, v1.vertex, v2.vertex, minDist, maxDist, _Tess);
+			void CopyMaterialFXToOutput (inout SurfaceOutput o) {
+				o.Albedo=mfxOut.Albedo;		
+				o.Normal=mfxOut.Normal;		
+				o.Emission = mfxOut.Emission;
+				o.Specular=mfxOut.Specular; 
+				o.Gloss=mfxOut.Gloss;		
+				o.Alpha=mfxOut.Alpha;		
 			}
 
 		
 	
+			half4 LightingSimpleSpecular (SurfaceOutput s, half3 lightDir, half3 viewDir, half atten) {
+				half3 h = normalize (lightDir + viewDir);
 
-			void disp (inout appdata v)
-			{
-				float4 FXTex = getGrowthAmount(v.texcoord.xy); 
-				float growthdisplace = getGrowthAndSnowDisplace(FXTex,v);			
-				v.vertex.xyz += (v.normal * clamp(growthdisplace,0,_DisplacementLimiter)*0.3);				
-				//Apply Displacement Texture
-				float d = tex2Dlod(_DispTex, (float3(v.texcoord.xy * _DispScale,0)).r);			
-				v.vertex.xyz += v.normal * pow(d,_DispPower) *  _Displacement;
+				half diff = max (0, dot (s.Normal, lightDir));
+
+				float nh = max (0, dot (s.Normal, h));
+				float spec = pow (nh, _GlassSpecularAmount);
+				diff = lerp (1,diff,_GlassShadowAmount);
+				half4 c;
+				c.rgb = (s.Albedo * _LightColor0.rgb * diff + (_LightColor0.rgb*_GlassSpecularColor) * spec ) * atten;
+		
+				c.a = s.Alpha;
+				return c;
 			}
 
-			
+		
+			void vert (inout appdata_full v, out Input o) {
+				UNITY_INITIALIZE_OUTPUT(Input,o);
+	
+				float4 thick =  (tex2Dlod(_AdvancedPBRMap,float4(v.texcoord.xy,0,0)).g-0.5) *_GlassThicknessAmount;
+				float3 normal = (tex2Dlod(_BumpMap,float4(v.texcoord.xy,0,0)));
+				float3 viewDir = normalize(ObjSpaceViewDir(v.vertex));
+				float dotProduct = (dot(v.normal, viewDir)-0.5)*_GlassRimDisplacement;
 
-            void surf (Input IN, inout SurfaceOutputStandard o) {
+				float4 hpos = UnityObjectToClipPos (v.vertex);
+				o.grabUV = ComputeGrabScreenPos(hpos);	
+				o.grabUVo =  o.grabUV;	
+				float3 influence = float3(0,0,0);
+				influence -= normalize(v.normal) * _GlassNormalDisplacementAmount;
+				influence += ((thick));
+				influence *= dotProduct;
+				o.grabUV.xyz -= float3(0.5,0.5,0.5);
+
+				o.grabUV.xyz += (influence * _GlassRefractionAmount);
+				o.grabUV.xyz += float3(0.5,0.5,0.5);
+			}
+
+
+            void surf (Input IN, inout SurfaceOutput o) {
 
 				
 				SetupMaterialFX (IN,o.Normal);
 				
-				CopyOutputStandardToMaterialFX (o);
+				CopyOutputToMaterialFX (o);
 					
 				float4 mainTexColor =  getUVModeTexture  (_MainTex, _MainTexUVMode, IN.uv_MainTex + parallaxOffset, _MainTexTriplanarScale, IN.worldPos, mfxOut.Normal, _MainTexTriplanarBlend);
 				
@@ -357,6 +432,68 @@
 					_SSRThickness = lerp (_SSRThickness,_SSRThickness*pow(rim,_SubSurfacePower+0.001),_SubsurfaceRimType);
 				}
 
+				_SSRThickness=-1;
+				//------------------------------GLASS
+				float camDist = clamp(distance(IN.worldPos, _WorldSpaceCameraPos)*0.1,0,1);
+				fixed3 gnormal = normal;
+				gnormal.z = gnormal.z / _GlassNormalAmount; 
+
+
+				IN.grabUV = lerp (IN.grabUVo,IN.grabUV,camDist);
+				float4 thick =  tex2D (_AdvancedPBRMap,IN.uv_MainTex).g *_GlassThicknessAmount;
+				float4 curve =  tex2D (_AdvancedPBRMap,IN.uv_MainTex).b *_GlassCurvatureAmount;
+				float4 pCoordR = UNITY_PROJ_COORD(IN.grabUV + float4(gnormal*_GlassNormalRGBSplit*_GlassRefractionRGBSplit* 0.01,thick.r*_GlassRefractionRGBSplit * 0.01)  );
+				float4 pCoordG = UNITY_PROJ_COORD(IN.grabUV- float4(gnormal*_GlassNormalRGBSplit*_GlassRefractionRGBSplit* 0.01,thick.r*_GlassRefractionRGBSplit * 0.01));
+				float4 pCoordB = UNITY_PROJ_COORD(IN.grabUV);
+
+				float grabTexR= tex2Dproj( _GrabTexture, pCoordR).r;
+				float grabTexG= tex2Dproj( _GrabTexture, pCoordG).g;
+				float grabTexB= tex2Dproj( _GrabTexture, pCoordB).b;
+				float3 grabTex = float3(grabTexR,grabTexG,grabTexB) * _GlassAdditiveGrabTex;
+				float3 mainTex = tex2D (_MainTex,IN.worldRefl).rgb;
+				grabTex *= lerp(_GlassColorTintThin,_GlassColorTintThick,_GlassColorTintThicknessAmount * thick * curve);
+
+
+				/*half glass_rim = 1.0 - saturate(dot (normalize(IN.viewDir), o.Normal));
+				float glass_rimLight = (pow (rim, _GlassRimPower));
+				glass_rimLight *= pow(1-glass_rim,_GlassRimDampenPower);
+			
+				float3 rimCol = ((mainTexColor*_GlassAdditiveMainTex)+grabTex)*_GlassRimColor;
+
+				mfxOut.Albedo = lerp((mainTexColor*_GlassAdditiveMainTex)+grabTex,rimCol,glass_rimLight);*/
+				/*float _GlassReflectionRimPower,_GlassReflectionRimType,_GlassReflectionRimAmount;
+				float _GlassReflectionRimDampenPower,_GlassReflectionRimDampenType,_GlassReflectionRimDampenAmount;
+				float _GlassReflectionRimAlphaPower,_GlassReflectionRimAlphaType,_GlassReflectionRimAlphaAmount;*/
+
+				fixed4 rimCol = _GlassRimColor; 
+				if (_GlassReflectionRimType <0) {
+					rimCol = lerp (rimCol,_GlassRimColor*pow(1-rim,_GlassReflectionRimPower+0.001),_GlassReflectionRimType * -1);
+				}
+				if (_GlassReflectionRimType > 0) {
+					rimCol = lerp (rimCol,_GlassRimColor*pow(rim,_GlassReflectionRimPower+0.001),_GlassReflectionRimType);
+				}
+				rimCol *=_GlassReflectionRimAmount;
+
+				fixed4 dampener = fixed4(1,1,1,1); 
+				if (_GlassReflectionRimDampenType <0) {
+					dampener = lerp (dampener,fixed4(1,1,1,1)*pow(1-rim,_GlassReflectionRimDampenPower+0.001),_GlassReflectionRimDampenType * -1);
+				}
+				if (_EmissionDampenRimType > 0) {
+					dampener = lerp (dampener,fixed4(1,1,1,1)*pow(rim,_GlassReflectionRimDampenPower+0.001),_GlassReflectionRimDampenType);
+				}
+				rimCol = clamp(rimCol * 1-(dampener * (_GlassReflectionRimDampenAmount)),0,1);		
+
+				mfxOut.Alpha=mainTexColor.a*_Opacity;
+				fixed4 dampAlpha = mfxOut.Alpha; 
+				if (_GlassReflectionRimAlphaType <0) {
+					dampAlpha = lerp (_Opacity,mfxOut.Alpha*pow(1-rim,_GlassReflectionRimAlphaPower+0.001),_GlassReflectionRimAlphaType * -1);
+				}
+				if (_GlassReflectionRimAlphaType > 0) {
+					dampAlpha = lerp (_Opacity,mfxOut.Alpha*pow(rim,_GlassReflectionRimAlphaPower+0.001),_GlassReflectionRimAlphaType);
+				}
+				mfxOut.Alpha = clamp(mfxOut.Alpha * 1-(dampAlpha * (_GlassReflectionRimAlphaAmount)),0,1);	
+
+				mfxOut.Albedo = (mainTexColor*_GlassAdditiveMainTex)+grabTex + rimCol;
 				GetEmission(IN);
 				//Aquire Effects
 				if (_DisplayMode != 1) {	
@@ -365,13 +502,14 @@
 				GetCubeEffect (IN);
 				GetIridescenceEffect(IN);											
 				}
-
+			
+				mfxOut.Alpha = lerp (0,mfxOut.Alpha,_Opacity);
 				MaterialFXFinalPass ();
 				HandleDisplayMode (IN,_DisplayMode,colored,oNormal,float3(0,0,0));
-				CopyMaterialFXToOutputStandard (o);
+				CopyMaterialFXToOutput (o);
             }
             ENDCG
         }
         FallBack "Diffuse"
-		CustomEditor "MaterialFX.MaterialFX_ShaderEditor"
+		CustomEditor "MaterialFX.MaterialFX_Glass_ShaderEditor"
     }

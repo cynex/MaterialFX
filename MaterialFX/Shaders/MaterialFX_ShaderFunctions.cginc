@@ -1,15 +1,87 @@
 //---------------------MaterialFX Variable Groups : Growth, Snow, Wet
-	float4 _WetTint, _GrowthTint, _SnowTint,_GrowthTint2;
-	float _WetSpeedY, _WetSpeedX;
-	float _Growth, _Snow,_Wetness;
-	sampler2D  _FXTex,_WetNormalTex;
-
+	float3 lightDirection,oNormal,viewDirection;
+	float2 mfxUV;
 	float thick = 1,curve = 1;
 	float3 normal = float3(0,0,0),iremissive= float3(0,0,0);
 	float4 fxAmount = float4(0,0,0,0);
 	half rim=1;
 	half3 skyColor = half3(0,0,0) ,cubeColor=half3(0,0,0);
 	float2 parallaxOffset = float2(0,0);
+	fixed3 detailAlbedo = float3(0,0,0);
+	fixed3 detailNormal = float3(0,0,0);
+
+	//for subsurface scattering (if used)
+	float _SSRThickness=0.3;
+	float _SSSDistortion=1;
+	float _SSSPower =1;
+	float _SSSScale=1;
+	float3 _SSSAmbient=float3(1,1,1);
+
+struct SurfaceOutputMaterialFX
+{
+	// For Specular + Metallic
+    fixed3 Albedo;  // diffuse color
+    fixed3 Normal;  // tangent space normal, if written
+    fixed3 Emission;
+    half Specular;  // specular power in 0..1 range
+    fixed Gloss;    // specular intensity
+    fixed Alpha;    // alpha for transparencies
+
+	// For Metallic
+    half Metallic;      // 0=non-metal, 1=metal
+    half Smoothness;    // 0=rough, 1=smooth
+    half Occlusion;     // occlusion (default 1)
+
+};
+
+	// These functions are so that we can use MaterialFX functions in multiple workflows
+	// 
+	SurfaceOutputMaterialFX mfxOut;
+
+/*	void CopyOutputToMaterialFX (SurfaceOutput o) {
+		mfxOut.Albedo = o.Albedo;		
+		mfxOut.Normal = o.Normal;		
+		mfxOut.Emission = o.Emission;
+		mfxOut.Specular = o.Specular;  
+		mfxOut.Gloss = o.Gloss;		
+		mfxOut.Alpha = o.Alpha;	
+	}
+
+	void CopyOutputStandardToMaterialFX (SurfaceOutputStandard o) {
+		mfxOut.Albedo = o.Albedo;		   
+		mfxOut.Normal = o.Normal;		   
+		mfxOut.Emission = o.Emission;
+		mfxOut.Metallic = o.Metallic;		
+		mfxOut.Smoothness = o.Smoothness;	 
+		mfxOut.Alpha = o.Alpha;			
+		mfxOut.Occlusion = o.Occlusion;   
+	}
+
+	void CopyMaterialFXToOutput (inout SurfaceOutput o) {
+		o.Albedo=mfxOut.Albedo;		
+		o.Normal=mfxOut.Normal;		
+		o.Emission = mfxOut.Emission;
+	    o.Specular=mfxOut.Specular; 
+		o.Gloss=mfxOut.Gloss;		
+		o.Alpha=mfxOut.Alpha;		
+	}
+
+	void CopyMaterialFXToOutputStandard (inout SurfaceOutputStandard o) {
+		o.Albedo=mfxOut.Albedo;		
+		o.Normal=mfxOut.Normal;		
+		o.Emission = mfxOut.Emission;
+		o.Metallic=mfxOut.Metallic;				
+		o.Smoothness=mfxOut.Smoothness;		
+		o.Alpha=mfxOut.Alpha;		
+		o.Occlusion=mfxOut.Occlusion;
+	}*/
+
+	float4 _WetTint, _GrowthTint, _SnowTint,_GrowthTint2;
+	float _WetSpeedY, _WetSpeedX;
+	float _Growth, _Snow,_Wetness;
+	sampler2D  _FXTex,_WetNormalTex;
+
+
 
 // Blending and UV Functions designed for VJToolkit
 
@@ -250,9 +322,7 @@ float4 getUVModeTexture (sampler2D tex, float mode, float2 uv, float scale, floa
 	return texColor;
 }
 
-
-
-void GetEnvironmentalEffects (Input IN, inout SurfaceOutputStandard o,float4 fxAmount) 
+void GetEnvironmentalEffects (Input IN, float4 fxAmount) 
 {
 	//--------------------------Environment Effects
 	float4 wp=float4(IN.worldPos,1);
@@ -267,9 +337,9 @@ void GetEnvironmentalEffects (Input IN, inout SurfaceOutputStandard o,float4 fxA
 	float3 detNormWet = UnpackNormal(texTriplanar(_WetNormalTex, wpWater,_WetTextureScale, normal,1)+texTriplanar(_WetNormalTex, wpWater2,_WetTextureScale*3, normal,1));
 			
 	// Apply Wetness				
-		o.Smoothness = clamp( o.Smoothness + (clamp(fxAmount.b * _Wetness,0,0.75)), 0, 1);
+		mfxOut.Smoothness = clamp(mfxOut.Smoothness + (clamp(fxAmount.b * _Wetness,0,0.75)), 0, 1);
 		float wetAlpha = wet * _WetTint.a;
-		o.Albedo = ((1 - wetAlpha) *  o.Albedo) + (wetAlpha *  o.Albedo *_WetTint.rgb);
+		mfxOut.Albedo = ((1 - wetAlpha) *  mfxOut.Albedo) + (wetAlpha *  mfxOut.Albedo *_WetTint.rgb);
 		// Apply Snow
 		float snowValue = fxAmount.r - (1 - _Snow);
 		float growthValue = fxAmount.g - (1 - _Growth);
@@ -277,9 +347,9 @@ void GetEnvironmentalEffects (Input IN, inout SurfaceOutputStandard o,float4 fxA
 	{
 		float c = clamp(snowValue, 0, 1);
 		float3 sCol = lerp (_SnowTint,_SnowTint*2,curve);
-		o.Albedo = (o.Albedo * (1 - c)) + (sCol * c);	
+		mfxOut.Albedo = (mfxOut.Albedo * (1 - c)) + (sCol * c);	
 		if (snowValue > 0.2) {
-			o.Smoothness *= clamp(c,0,.75);
+			mfxOut.Smoothness *= clamp(c,0,.75);
 		}
 	}
 	// Apply Growth
@@ -287,48 +357,49 @@ void GetEnvironmentalEffects (Input IN, inout SurfaceOutputStandard o,float4 fxA
 	{
 		float c = clamp((fxAmount.g - (1 - _Growth)), 0, 1);
 		float3 gCol = lerp (_GrowthTint,_GrowthTint2, c*(1-curve));				
-		o.Albedo = (o.Albedo * (1 - c)) + (gCol * c);	
+		mfxOut.Albedo = (mfxOut.Albedo * (1 - c)) + (gCol * c);	
 		if (growthValue > 0.2) {
-		o.Smoothness *= lerp(0,o.Smoothness,c*(1-curve));
+		mfxOut.Smoothness *= lerp(0,mfxOut.Smoothness,c*(1-curve));
 		}
 	}
 
 	// Apply Wetness
-	float3 wNormal = o.Normal;
+	float3 wNormal = mfxOut.Normal;
 	detNormWet=detNormWet;
 	wNormal.x += detNormWet.x;
 	wNormal.y += detNormWet.y;
 	wNormal.z += detNormWet.z;
-	o.Normal = lerp(o.Normal,wNormal,wet*_AllEffects);
+	mfxOut.Normal = lerp(mfxOut.Normal,wNormal,wet*_AllEffects);
 }
 
-void HandleDisplayMode (Input IN, inout SurfaceOutputStandard o, int DISPLAYMODE, float3 originalColor, float3 oNormal,float3 grabTex) {
+void HandleDisplayMode (Input IN, int DISPLAYMODE, float3 originalColor, float3 oNormal,float3 grabTex) {
+		if (_DisplayMode == 1) _SSRThickness=-1;
 		if (DISPLAYMODE > 0) {
-		if (DISPLAYMODE == 1) { o.Albedo=originalColor; _SSRThickness=-1; } 
-		if (DISPLAYMODE == 2) { o.Albedo=0; o.Emission=normalize(o.Normal); _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 3) { o.Emission=o.Albedo;  o.Albedo=0; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 4) { o.Albedo=0; o.Emission=o.Smoothness; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 5) { o.Albedo=0; o.Emission=thick; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 6) { o.Albedo=0; o.Emission=curve; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
+		if (DISPLAYMODE == 1) { mfxOut.Albedo=originalColor; _SSRThickness=-1; } 
+		if (DISPLAYMODE == 2) { mfxOut.Albedo=0; mfxOut.Emission=normalize(mfxOut.Normal); _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 3) { mfxOut.Emission=mfxOut.Albedo;  mfxOut.Albedo=0; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 4) { mfxOut.Albedo=0; mfxOut.Emission=mfxOut.Smoothness; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 5) { mfxOut.Albedo=0; mfxOut.Emission=thick; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 6) { mfxOut.Albedo=0; mfxOut.Emission=curve; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
 			
-		if (DISPLAYMODE == 7) { o.Albedo=0; } 
-		if (DISPLAYMODE == 8) { o.Albedo=0; o.Emission=o.Occlusion; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 9) { o.Albedo=float3(0,0,0); o.Metallic=0; o.Smoothness=0; } 
-		if (DISPLAYMODE == 10) { o.Albedo=0; o.Emission=fxAmount; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 11) { o.Albedo=0; o.Emission=iremissive; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 12) { o.Albedo=0; o.Emission=skyColor; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
-		if (DISPLAYMODE == 13) { o.Albedo=0; o.Emission=cubeColor; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
+		if (DISPLAYMODE == 7) { mfxOut.Albedo=0; } 
+		if (DISPLAYMODE == 8) { mfxOut.Albedo=0; mfxOut.Emission=mfxOut.Occlusion; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 9) { mfxOut.Albedo=float3(0,0,0); mfxOut.Metallic=0; mfxOut.Smoothness=0; } 
+		if (DISPLAYMODE == 10) { mfxOut.Albedo=0; mfxOut.Emission=fxAmount; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 11) { mfxOut.Albedo=0; mfxOut.Emission=iremissive; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 12) { mfxOut.Albedo=0; mfxOut.Emission=skyColor; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
+		if (DISPLAYMODE == 13) { mfxOut.Albedo=0; mfxOut.Emission=cubeColor; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
 		if (DISPLAYMODE == 14) {
 			float2 chk = floor(IN.uv_MainTex*_CheckerDensity) / 2;
 			float checker = frac(chk.x + chk.y) *2; 
-			o.Normal = oNormal;
-			o.Albedo=checker; 
-			o.Emission=checker; 
-			o.Metallic=0; 
-			o.Smoothness=0;
+			mfxOut.Normal = oNormal;
+			mfxOut.Albedo=checker; 
+			mfxOut.Emission=checker; 
+			mfxOut.Metallic=0; 
+			mfxOut.Smoothness=0;
 			_SSRThickness=-1;
 		}
-		if (DISPLAYMODE == 14) { o.Albedo=0; o.Emission=grabTex; _SSRThickness=-1; o.Smoothness=0; o.Metallic=0;} 
+		if (DISPLAYMODE == 15) { mfxOut.Albedo=0; mfxOut.Emission=grabTex; _SSRThickness=-1; mfxOut.Smoothness=0; mfxOut.Metallic=0;} 
 	}
 		
 }
@@ -346,11 +417,11 @@ uniform float4 _ReflectionTint;
 float _ReflectionDampenRimPower,_ReflectionDampenRimType,_ReflectionDampenRimAmount;
 float _ReflectionAmount,_ReflectionPower,_ReflectionRimType;
 
-void GetSkyEffect (Input IN, inout SurfaceOutputStandard o) {
+void GetSkyEffect (Input IN) {
 		skyColor=half3(0,0,0);
 		if (_ReflectionAmount > 0) {
 		half3 worldViewDir = normalize(UnityWorldSpaceViewDir(IN.worldPos));
-		half3 worldRefl = reflect(-IN.viewDir, o.Normal);
+		half3 worldRefl = reflect(-IN.viewDir, mfxOut.Normal);
 		half4 skyData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, normal);
 		skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR);
 		
@@ -387,10 +458,10 @@ float4 _ReflectionCubeTint;
 samplerCUBE _ReflectionCube;
 float _ReflectionCubeAmount,_ReflectionCubePower,_ReflectionCubeNormalAmount;
 
-void GetCubeEffect (Input IN, inout SurfaceOutputStandard o) {		
+void GetCubeEffect (Input IN) {		
 	cubeColor=half3(0,0,0);
 	if (_ReflectionCubeAmount >0) {
-		cubeColor =  (texCUBE (_ReflectionCube,(-IN.worldRefl*(1+o.Normal*0.6)))) * _ReflectionCubeTint;
+		cubeColor =  (texCUBE (_ReflectionCube,(-IN.worldRefl*(1+mfxOut.Normal*0.6)))) * _ReflectionCubeTint;
 		cubeColor*= _ReflectionCubeAmount * clamp(pow(rim,_ReflectionCubePower+0.001),0,1);
 	}
 }
@@ -407,10 +478,10 @@ _IridescenceTint("_IridescenceTint",color)=(1,1,1,1)
 float _IridescenceAmount,_IridescenceRimPower,_IridescenceRimType,_IridescenceScale,_IridescenceSpeed,_IridescenceCurvature;
 float4 _IridescenceTint;			
 
-void GetIridescenceEffect (Input IN, inout SurfaceOutputStandard o) {					
+void GetIridescenceEffect (Input IN) {					
 	iremissive = 0; 
 	if (_IridescenceAmount>0) {
-		half irim = 1.0 - saturate(dot (normalize(IN.viewDir*o.Normal), normalize(o.Normal)));
+		half irim = 1.0 - saturate(dot (normalize(IN.viewDir*mfxOut.Normal), normalize(mfxOut.Normal)));
 		float3 irColor = abs(float3(fractalNoise(_IridescenceScale*IN.viewDir*IN.worldPos.xyz + (_IridescenceSpeed*_Time.x *2)),fractalNoise(_IridescenceScale*IN.viewDir*IN.worldPos.xzy + (_IridescenceSpeed*_Time.x *.3)),fractalNoise(_IridescenceScale*IN.viewDir*IN.worldPos.zxy + (_IridescenceSpeed*_Time.x *1.23))));
 		irColor *= abs(float3(fractalNoise(_IridescenceScale*IN.viewDir*IN.worldPos.yzx*.4 + (_IridescenceSpeed*_Time.x *2)),fractalNoise(_IridescenceScale*IN.viewDir*IN.worldPos.zyx*.5 + (_IridescenceSpeed*_Time.x *.2)),fractalNoise(_IridescenceScale*IN.viewDir*IN.worldPos.yxz*.6 + (_IridescenceSpeed*_Time.x *0.321))));
 		irColor = lerp(irColor,irColor*curve,_IridescenceCurvature);
@@ -422,12 +493,12 @@ void GetIridescenceEffect (Input IN, inout SurfaceOutputStandard o) {
 			iremissive = lerp (iremissive,irColor*pow(irim,_IridescenceRimPower+0.001),_IridescenceRimType);
 		}
 		iremissive *= _IridescenceTint * _IridescenceAmount;				
-		o.Albedo += iremissive;
+		mfxOut.Albedo += iremissive;
 				
 	}
 }
 
-void GetParallax (Input IN, inout SurfaceOutputStandard o) {
+void GetParallax (Input IN) {
 	if (fxAmount.r - (1 - _Snow) > 0)
 	{
 		float c = clamp(fxAmount.r - (1 - _Snow), 0, 1);
@@ -457,7 +528,7 @@ sampler2D _EmissionMap;
 float4 _EmissionBoostColor;
 float _EmissionBoostRimPower,_EmissionAmount,_EmissionBoostRimType,_EmissionDampenRimPower,_EmissionDampenRimType,_EmissionDampenRimAmount;
 
-void GetEmission (Input IN, inout SurfaceOutputStandard o){
+void GetEmission (Input IN){
 				
 			
 	fixed4 src = (tex2D(_EmissionMap,IN.uv_MainTex) * _EmissionColor * _EmissionAmount);
@@ -479,5 +550,26 @@ void GetEmission (Input IN, inout SurfaceOutputStandard o){
 		dampener = lerp (dampener,fixed4(1,1,1,1)*pow(rim,_EmissionDampenRimPower+0.001),_EmissionDampenRimType);
 	}
 	dst = dst * 1-(dampener * (_EmissionDampenRimAmount));					
-	o.Emission = dst.rgb;				
+	mfxOut.Emission = dst.rgb;				
 }
+
+void SetupMaterialFX (Input IN,float3 originalNormal) {
+				lightDirection = (_WorldSpaceLightPos0.xyz);
+				oNormal = originalNormal;
+				viewDirection=IN.viewDir;
+				mfxUV = IN.uv_MainTex;
+				//Needed before for parallax offset
+			    fxAmount = getGrowthAmount(IN.uv_MainTex) * _AllEffects;
+				GetParallax(IN);
+			}
+
+		
+			void MaterialFXFinalPass () {
+				//Apply Emission Values
+				mfxOut.Emission += (skyColor+cubeColor) * (1-  mfxOut.Metallic);
+				mfxOut.Albedo += ((skyColor+cubeColor)) + detailAlbedo;
+				//Apply Ambient Color for lighting, Also force Material States for debugging
+				_SSSAmbient=mfxOut.Albedo;
+				mfxOut.Metallic = lerp(mfxOut.Metallic,1,_ForceMetallic);
+				mfxOut.Smoothness = lerp(mfxOut.Smoothness,1,_ForceSmoothness);
+			}
