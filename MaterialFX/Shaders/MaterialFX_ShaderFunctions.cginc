@@ -17,6 +17,8 @@
 	float _SSSScale=1;
 	float3 _SSSAmbient=float3(1,1,1);
 
+
+
 struct SurfaceOutputMaterialFX
 {
 	// For Specular + Metallic
@@ -79,7 +81,8 @@ struct SurfaceOutputMaterialFX
 	float4 _WetTint, _GrowthTint, _SnowTint,_GrowthTint2;
 	float _WetSpeedY, _WetSpeedX;
 	float _Growth, _Snow,_Wetness;
-	sampler2D  _FXTex,_WetNormalTex;
+	sampler2D  _FXTex,_WetNormalTex;	
+	float _GrowthNoiseScale;
 
 
 
@@ -292,24 +295,28 @@ float4 getGrowthAmount(float2 uv)
 	return float4(FXTex.r * _Snow, FXTex.g * _Growth, FXTex.b * _Wetness, CTex)* _AllEffects;
 }
 
+
+float _FXDisplacementMulitplier=26;
+
 float getGrowthAndSnowDisplace (float4 FXTex, appdata v) {
 	float growthdisplace = 0;
 	//Growth
+	_GrowthNoiseScale=1+_GrowthNoiseScale;
+	_SnowNoiseScale=1+_SnowNoiseScale;
 	if (FXTex.g - (1 - _Growth) > 0)
 	{
-		growthdisplace += ((_Growth * 0.5) * lerp(0,(fractalNoise(v.vertex.xy*100))*128,FXTex.g - (1 - _Growth))*FXTex.a)*_GrowthDisplacement;
+		growthdisplace += ((_Growth * 0.5) * lerp(0,(fractalNoise(v.vertex.xy*1000 * _GrowthNoiseScale))*128*_FXDisplacementMulitplier,FXTex.g - (1 - _Growth))*FXTex.a)*_GrowthDisplacement;
 		// Growth + noise (after a certain level)
 		if (FXTex.g - (1 - _Growth) >_GrowthNoise-.75)
 		{
-		growthdisplace += (v.normal * fractalNoise(_GrowthNoiseSpeed * _Time.y + v.vertex.xy*100)*0.2)*_GrowthNoise;
+		growthdisplace += (fractalNoise(_GrowthNoiseSpeed * _Time.y + v.vertex.xy*100 * _GrowthNoiseScale)*0.2*_FXDisplacementMulitplier)*_GrowthNoise*_GrowthDisplacement;
 		}
 	}
 	//Snow
 	if (FXTex.r - (1 - _Snow) > 0)
 	{
-		growthdisplace += clamp((_Snow * 0.5)*  lerp(0,(hashNoise(v.vertex.xy*.2))*50,(FXTex.r - (1 - _Growth)))*FXTex.a,0,1)*_SnowDisplacement;				
-		growthdisplace += (v.normal * fractalNoise(v.vertex.xy*_SnowNoiseScale)*0.5)*_SnowNoiseAmount;
-				
+		growthdisplace += clamp((_Snow * 0.5)*  lerp(0,(hashNoise(v.vertex.xy*_SnowNoiseScale*13)),(FXTex.r - (1 - _Growth)))*FXTex.a,0,1)*_SnowDisplacement*_SnowNoiseAmount;					
+		growthdisplace += (fractalNoise(v.vertex.xy*_SnowNoiseScale*8)*0.5)*_SnowDisplacement*_SnowNoiseAmount;				
 	}
 	if (_AllEffects==0) growthdisplace=0;
 	return growthdisplace;
@@ -338,6 +345,7 @@ void GetEnvironmentalEffects (Input IN, float4 fxAmount)
 			
 	// Apply Wetness				
 		mfxOut.Smoothness = clamp(mfxOut.Smoothness + (clamp(fxAmount.b * _Wetness,0,0.75)), 0, 1);
+	
 		float wetAlpha = wet * _WetTint.a;
 		mfxOut.Albedo = ((1 - wetAlpha) *  mfxOut.Albedo) + (wetAlpha *  mfxOut.Albedo *_WetTint.rgb);
 		// Apply Snow
@@ -347,7 +355,7 @@ void GetEnvironmentalEffects (Input IN, float4 fxAmount)
 	{
 		float c = clamp(snowValue, 0, 1);
 		float3 sCol = lerp (_SnowTint,_SnowTint*2,curve);
-		mfxOut.Albedo = (mfxOut.Albedo * (1 - c)) + (sCol * c);	
+		mfxOut.Albedo = (clamp(mfxOut.Albedo,0,1) * (1 - c)) + (sCol * c);	
 		if (snowValue > 0.2) {
 			mfxOut.Smoothness *= clamp(c,0,.75);
 		}
@@ -357,7 +365,7 @@ void GetEnvironmentalEffects (Input IN, float4 fxAmount)
 	{
 		float c = clamp((fxAmount.g - (1 - _Growth)), 0, 1);
 		float3 gCol = lerp (_GrowthTint,_GrowthTint2, c*(1-curve));				
-		mfxOut.Albedo = (mfxOut.Albedo * (1 - c)) + (gCol * c);	
+		mfxOut.Albedo = lerp(mfxOut.Albedo,(gCol),c);	
 		if (growthValue > 0.2) {
 		mfxOut.Smoothness *= lerp(0,mfxOut.Smoothness,c*(1-curve));
 		}
@@ -369,6 +377,7 @@ void GetEnvironmentalEffects (Input IN, float4 fxAmount)
 	wNormal.x += detNormWet.x;
 	wNormal.y += detNormWet.y;
 	wNormal.z += detNormWet.z;
+	mfxOut.Gloss =mfxOut.Smoothness;
 	mfxOut.Normal = lerp(mfxOut.Normal,wNormal,wet*_AllEffects);
 }
 

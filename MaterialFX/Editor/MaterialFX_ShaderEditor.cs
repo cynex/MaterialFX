@@ -256,7 +256,8 @@ namespace MaterialFX
             tempProp.unifromName = "_FXTex";
             tempProp.displayName = "Environemnt FX Map";
             tempProp.uniformProperties.Add(new UniformProperty("_AllEffects", "All Effect Blend", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_DisplacementLimiter", "Displacement Limiter", UniformType.RANGE64));
+            tempProp.uniformProperties.Add(new UniformProperty("_FXDisplacementMulitplier", "Displacement Mulitplier", UniformType.RANGE128));
+            tempProp.uniformProperties.Add(new UniformProperty("_DisplacementLimiter", "Displacement Limiter", UniformType.RANGE256));
             tempProp.uniformProperties.Add(new UniformProperty("_Snow", "Snow Amount", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_SnowDisplacement", "Snow Displacement", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_SnowNoiseAmount", "Snow Noise Amount", UniformType.RANGE1));
@@ -266,6 +267,7 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_SnowTint", "Snow Color (Tint)", UniformType.HDRCOLOR));
 
             tempProp.uniformProperties.Add(new UniformProperty("_Growth", "Growth Amount", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoiseScale", "Grow Noise Size ", UniformType.RANGE64));
             tempProp.uniformProperties.Add(new UniformProperty("_GrowthDisplacement", "Growth Displacement", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoise", "Growth Noise", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoiseSpeed", "Growth Noise Speed", UniformType.RANGE4));
@@ -280,6 +282,7 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_WetTint", "Wetness Color (Tint)", UniformType.HDRCOLOR));
             tempProp.uniformProperties.Add(new UniformProperty("_WetSpeedY", "Wetness Gravity", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_FXMap", "Generate FX Map", UniformType.FXMAP));
+
             EditorHelper.ShowTextureUniforms(targetMat, tempProp);
 
 

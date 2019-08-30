@@ -62,7 +62,8 @@
 			_SnowNoiseAmount("_SnowNoiseAmount",FLOAT)=1
 			
 			_FXTex("FX Texture", 2D) = "white" {}   
-
+			_GrowthNoiseScale ("_GrowthNoiseScale",FLOAT)=4
+			_FXDisplacementMulitplier ("_FXDisplacementMulitplier",FLOAT)=1
 			_Growth("Growth", RANGE(0,1))=0
 			_GrowthNoise("_GrowthNoise",RANGE(0,1))=.3
 			_GrowthNoiseSpeed("_GrowthNoiseSpeed",FLOAT)=.3
@@ -231,7 +232,7 @@
 		    
 
 			float _ForceSmoothness,_ForceMetallic;
-
+			float _ObjectSize;
 
 
 
@@ -308,7 +309,7 @@
 			{
 				float4 FXTex = getGrowthAmount(v.texcoord.xy); 
 				float growthdisplace = getGrowthAndSnowDisplace(FXTex,v);			
-				v.vertex.xyz += (v.normal * clamp(growthdisplace,0,_DisplacementLimiter)*0.3);				
+				v.vertex.xyz += (v.normal * clamp(growthdisplace,0,_DisplacementLimiter)*0.01);				
 				//Apply Displacement Texture
 				float d = tex2Dlod(_DispTex, (float3(v.texcoord.xy * _DispScale,0)).r);			
 				v.vertex.xyz += v.normal * pow(d,_DispPower) *  _Displacement;

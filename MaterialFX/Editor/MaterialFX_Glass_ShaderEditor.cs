@@ -26,15 +26,15 @@ namespace MaterialFX
             displayMode = EditorHelper.GetRenderDisplayMode(targetMat, displayMode);
             string envString = "Environment";
             if (EditorGUIUtility.currentViewWidth < 460) envString = "Env";
-            //editorTab = GUILayout.Toolbar(editorTab, new string[] { "Surface", "Detail", "Lighting", envString, "About" }, GUILayout.Width(EditorGUIUtility.currentViewWidth - 40));
-            editorTab = GUILayout.Toolbar(editorTab, new string[] { "Surface", "Detail", "Lighting", "About" }, GUILayout.Width(EditorGUIUtility.currentViewWidth - 40));
+            editorTab = GUILayout.Toolbar(editorTab, new string[] { "Surface", "Detail", "Lighting", envString, "About" }, GUILayout.Width(EditorGUIUtility.currentViewWidth - 40));
+           
             GUILayout.Space(10);
 
             if (editorTab == 0) ShowTextureArea();
             if (editorTab == 1) ShowDetailArea();
             if (editorTab == 2) ShowLightingArea();
-            //if (editorTab == 3) ShowEnvironmentalArea();
-            if (editorTab == 3)
+            if (editorTab == 3) ShowEnvironmentalArea();
+            if (editorTab == 4)
             {
                 EditorHelper.About();
             }
@@ -169,8 +169,8 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_GlassShadowAmount", "Shadow Amount", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassSpecularColor", " Specular Color", UniformType.HDRCOLOR));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassSpecularAmount", "Specular Amount", UniformType.RANGE256));
-            tempProp.uniformProperties.Add(new UniformProperty("_GlassNormalDisplacementAmount", "Normal Displacement Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GlassRimDisplacement", "Rim Displacement", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassNormalDisplacementAmount", "Normal Displacement Amount", UniformType.RANGE8));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassRimDisplacement", "Rim Displacement", UniformType.RANGE8));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassNormalAmount", "Normal Influence", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassThicknessAmount", "Thickness Influence", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassCurvatureAmount", "Curvature Influence", UniformType.RANGE1));
@@ -178,18 +178,13 @@ namespace MaterialFX
             tempProp.uniformProperties.Add(new UniformProperty("_GlassAdditiveGrabTex", "Grab Texture Amount", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassColorTintThin", "Color Tint Thin", UniformType.HDRCOLOR));
             tempProp.uniformProperties.Add(new UniformProperty("_GlassColorTintThick", "Color Tint Thick", UniformType.HDRCOLOR));
-            tempProp.uniformProperties.Add(new UniformProperty("_GlassColorTintThicknessAmount", "Color Tint Thickness Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GlassRefractionAmount", "Refraction Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GlassRefractionRGBSplit", "Refraction RGB Split", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GlassNormalRGBSplit", "Normal RGB Split", UniformType.RANGE1));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassColorTintThicknessAmount", "Color Tint Thickness Amount", UniformType.RANGE2));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassRefractionAmount", "Refraction Amount", UniformType.RANGE8));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassRefractionRGBSplit", "Refraction RGB Split", UniformType.RANGE4));
+            tempProp.uniformProperties.Add(new UniformProperty("_GlassNormalRGBSplit", "Normal RGB Split", UniformType.RANGE4));
 
             tempProp.uniformProperties.Add(new UniformProperty("_GlassRimColor", "Reflection Rim Color", UniformType.HDRCOLOR));
-            //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimPower", "Rim Power", UniformType.RANGE16));
-            //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimDampenPower", "Rim Dampen Power", UniformType.RANGE1));
-            //tempProp.uniformProperties.Add(new UniformProperty("_GlassRimAlphaPower", "Rim Alpha Power", UniformType.RANGE16));
-//            tempProp.uniformProperties.Add(new UniformProperty("_GlassRimAlphaAmount", "Rim Alpha Amount", UniformType.RANGE1));
-            
-
+        
 
 
             tempProp.uniformProperties.Add(new UniformProperty("_GlassReflectionRimAmount", "Reflection Rim Amount", UniformType.RANGE1));
@@ -213,11 +208,11 @@ namespace MaterialFX
         void ShowDetailArea()
         {
 
-           /* tempProp = new TextureProperties();
+            tempProp = new TextureProperties();
             tempProp.unifromName = "";
             tempProp.displayName = "Tessellation";
             tempProp.hasTexture = false;
-            tempProp.uniformProperties.Add(new UniformProperty("_Tess", "Tessellation Amount", UniformType.TESSRANGE));
+         /*   tempProp.uniformProperties.Add(new UniformProperty("_Tess", "Tessellation Amount", UniformType.TESSRANGE));
             tempProp.uniformProperties.Add(new UniformProperty("_TessDistMin", "Tess Distance Min", UniformType.RANGE256));
             tempProp.uniformProperties.Add(new UniformProperty("_TessDistMax", "Tess Distance Max", UniformType.RANGE256));
             tempProp.uniformProperties.Add(new UniformProperty("_Phong", "Phong Amount", UniformType.RANGE8));
@@ -334,19 +329,19 @@ namespace MaterialFX
             tempProp.unifromName = "_FXTex";
             tempProp.displayName = "Environemnt FX Map";
             tempProp.uniformProperties.Add(new UniformProperty("_AllEffects", "All Effect Blend", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_DisplacementLimiter", "Displacement Limiter", UniformType.RANGE64));
+           // tempProp.uniformProperties.Add(new UniformProperty("_DisplacementLimiter", "Displacement Limiter", UniformType.RANGE64));
             tempProp.uniformProperties.Add(new UniformProperty("_Snow", "Snow Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_SnowDisplacement", "Snow Displacement", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_SnowNoiseAmount", "Snow Noise Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_SnowNoiseScale", "Snow Noise Scale", UniformType.RANGE8));
+            //tempProp.uniformProperties.Add(new UniformProperty("_SnowDisplacement", "Snow Displacement", UniformType.RANGE1));
+          //  tempProp.uniformProperties.Add(new UniformProperty("_SnowNoiseAmount", "Snow Noise Amount", UniformType.RANGE1));
+           // tempProp.uniformProperties.Add(new UniformProperty("_SnowNoiseScale", "Snow Noise Scale", UniformType.RANGE8));
 
             tempProp.uniformProperties.Add(new UniformProperty("_SnowAddParalax", "Snow Add Height", UniformType.RANGE1));
             tempProp.uniformProperties.Add(new UniformProperty("_SnowTint", "Snow Color (Tint)", UniformType.HDRCOLOR));
 
             tempProp.uniformProperties.Add(new UniformProperty("_Growth", "Growth Amount", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GrowthDisplacement", "Growth Displacement", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoise", "Growth Noise", UniformType.RANGE1));
-            tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoiseSpeed", "Growth Noise Speed", UniformType.RANGE4));
+            //tempProp.uniformProperties.Add(new UniformProperty("_GrowthDisplacement", "Growth Displacement", UniformType.RANGE1));
+            //tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoise", "Growth Noise", UniformType.RANGE1));
+            //tempProp.uniformProperties.Add(new UniformProperty("_GrowthNoiseSpeed", "Growth Noise Speed", UniformType.RANGE4));
 
             tempProp.uniformProperties.Add(new UniformProperty("_GrowthTint", "Growth Color Low (Tint)", UniformType.HDRCOLOR));
             tempProp.uniformProperties.Add(new UniformProperty("_GrowthTint2", "Growth Color High (Tint)", UniformType.HDRCOLOR));
