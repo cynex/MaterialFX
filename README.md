@@ -1,6 +1,8 @@
 # MaterialFX
 ![splash image](https://github.com/cynex/MaterialFX/blob/master/MaterialFX/Resources/MaterialFX_Splash.jpg?raw=true)
 
+[![YoutubeVideo](https://img.youtube.com/vi/ZZKjNVfgPjM/0.jpg)](https://www.youtube.com/watch?v=ZZKjNVfgPjM)
+
 Material FX : A powerful free shader for unity.
 
 Features:
